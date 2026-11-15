@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#07060d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+html,body{margin:0;height:100%;background:#07060d;overflow:hidden;color:#e9e6f5;
+  font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;touch-action:none;overscroll-behavior:none}
+canvas{position:fixed;inset:0;display:block}
+.hide{display:none!important}
+button{font-family:inherit;color:inherit}
+#ui{position:fixed;inset:0;pointer-events:none}
+#ui>*{pointer-events:auto}
+
+/* ---------- title ---------- */
+#title{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;padding:4vh 4vw}
+#title img{width:min(78vw,620px,90vh);filter:drop-shadow(0 0 24px rgba(150,110,255,.45));animation:float 5s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-6px)}}
+#title .sub{letter-spacing:.35em;font-size:clamp(12px,1.8vmin,16px);color:#b9b0dc;text-align:center}
+#title .sub b{display:block;font-size:clamp(18px,3.6vmin,30px);letter-spacing:.25em;color:#efeaff;margin-bottom:.5vh;font-weight:800;
+  text-shadow:0 0 18px rgba(170,130,255,.7)}
+.menu{display:flex;flex-direction:column;gap:10px;margin-top:1vh;min-width:min(64vw,280px)}
+.btn{pointer-events:auto;cursor:pointer;border:1px solid rgba(160,140,255,.45);background:linear-gradient(180deg,rgba(40,30,80,.75),rgba(15,12,30,.85));
+  padding:12px 22px;border-radius:10px;font-size:clamp(14px,2.2vmin,17px);letter-spacing:.12em;font-weight:700;
+  box-shadow:0 0 18px rgba(120,90,255,.18),inset 0 0 12px rgba(150,120,255,.12);transition:transform .1s}
+.btn:active{transform:scale(.97)}
+.btn.gold{border-color:rgba(255,215,140,.6);background:linear-gradient(180deg,rgba(90,60,20,.7),rgba(30,18,8,.85))}
+.btn[disabled]{opacity:.35}
+.ver{position:absolute;right:12px;bottom:10px;font-size:11px;color:#7d7699;letter-spacing:.1em;pointer-events:none}
+.hint{font-size:12px;color:#8f88b0;text-align:center;line-height:1.6}
+
+/* ---------- chapter select ---------- */
+#chap{position:absolute;inset:0;background:rgba(5,4,12,.82);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px}
+#chap h2{margin:0 0 6px;letter-spacing:.3em;font-size:18px;color:#cfc6ff}
+#chap .list{display:flex;flex-direction:column;gap:10px;width:min(86vw,440px)}
+#chap .list .btn{text-align:left;display:flex;flex-direction:column;gap:3px}
+#chap .list .btn small{font-weight:500;letter-spacing:.04em;color:#a9a2c9;font-size:12px}
+
+/* ---------- card ---------- */
+#card{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,rgba(30,20,60,.55),rgba(3,2,8,.92));
+  opacity:0;transition:opacity .6s}
+#card.on{opacity:1}
+#card .n{font-size:clamp(13px,2vmin,16px);letter-spacing:.6em;color:#a99be8;margin-bottom:12px}
+#card .t{font-size:clamp(22px,4.6vmin,40px);font-weight:800;letter-spacing:.12em;text-align:center;padding:0 6vw;
+  background:linear-gradient(90deg,#c6b2ff,#ffffff,#9fd8ff);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 12px rgba(150,120,255,.5))}
+#card .line{width:min(60vw,420px);height:1px;margin-top:16px;background:linear-gradient(90deg,transparent,#a58cff,transparent)}
+
+/* ---------- dialog ---------- */
+#dlg{position:absolute;inset:0;padding:0 max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));
+  display:flex;align-items:flex-end;gap:0;cursor:pointer}
+#dlg .por{position:relative;width:min(30vmin,190px);height:min(36vmin,228px);flex:none;margin-right:-10px;z-index:2;display:flex;align-items:flex-end;justify-content:center}
+#dlg .por img{max-height:100%;max-width:100%;border-radius:12px 12px 0 0;-webkit-mask-image:linear-gradient(180deg,#000 70%,transparent);mask-image:linear-gradient(180deg,#000 70%,transparent)}
+#dlg .emb{width:min(17vmin,104px);height:min(17vmin,104px);margin-bottom:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:min(7vmin,44px);font-weight:800;border:2px solid currentColor;background:radial-gradient(circle,rgba(255,255,255,.08),rgba(0,0,0,.6));
+  box-shadow:0 0 22px currentColor inset,0 0 14px rgba(0,0,0,.6)}
+#dlg .box{flex:1;min-height:min(30vmin,170px);background:linear-gradient(180deg,rgba(14,11,28,.88),rgba(6,5,14,.95));border:1px solid rgba(150,130,255,.35);
+  border-radius:14px;padding:14px 18px 26px 22px;position:relative;box-shadow:0 0 30px rgba(0,0,0,.6),inset 0 0 22px rgba(120,90,255,.08)}
+#dlg .nm{font-weight:800;font-size:clamp(14px,2.4vmin,18px);letter-spacing:.08em;margin-bottom:6px}
+#dlg .tx{font-size:clamp(14px,2.5vmin,18px);line-height:1.65;white-space:pre-wrap;word-break:keep-all}
+#dlg.nar .tx{color:#cfc9e6;font-style:italic}
+#dlg.sys .tx{color:#8fd8ff;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:clamp(13px,2.2vmin,16px)}
+#dlg .nx{position:absolute;right:14px;bottom:8px;font-size:12px;color:#9d93d8;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.25}}
+#dlgbar{position:absolute;top:max(10px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right));display:flex;gap:8px}
+.sbtn{pointer-events:auto;border:1px solid rgba(160,140,255,.4);background:rgba(10,8,22,.7);padding:7px 12px;border-radius:8px;font-size:12px;letter-spacing:.1em;cursor:pointer}
+.sbtn.on{background:rgba(110,80,220,.6)}
+
+/* ---------- HUD ---------- */
+#hud{position:absolute;inset:0;pointer-events:none}
+#hud *{pointer-events:none}
+#pl{position:absolute;left:max(10px,env(safe-area-inset-left));top:max(8px,env(safe-area-inset-top));width:min(29vw,250px)}
+.pname{font-size:12px;font-weight:800;letter-spacing:.08em;display:flex;justify-content:space-between;white-space:nowrap;gap:6px}
+.pname span{font-weight:500;color:#aaa3c9}
+.bar{height:9px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.18);border-radius:5px;overflow:hidden;margin:3px 0 5px}
+.bar i{display:block;height:100%;width:100%;transition:width .12s}
+#hpE i{background:linear-gradient(90deg,#6b5cff,#9fd8ff)}
+#hpN i{background:linear-gradient(90deg,#9fd8ff,#ffffff)}
+.mini{opacity:.8}
+.mini .bar{height:5px}
+#lk{height:8px}
+#lk i{background:linear-gradient(90deg,#8a5cff,#c9b6ff,#9fe2ff)}
+#lk.full i{animation:lkp .6s infinite alternate}
+@keyframes lkp{to{filter:brightness(1.6)}}
+#boss{position:absolute;left:50%;transform:translateX(-50%);top:max(8px,env(safe-area-inset-top));width:min(36vw,440px);text-align:center}
+#boss .bn{font-size:12px;font-weight:800;letter-spacing:.12em;text-shadow:0 0 8px #000}
+#boss .bn small{font-weight:500;color:#c9b6ff;margin-left:6px;font-size:11px}
+#boss .bar{height:10px}
+#boss .bar i{background:linear-gradient(90deg,#7a1fff,#d77cff)}
+#obj{position:absolute;left:50%;transform:translateX(-50%);top:max(8px,env(safe-area-inset-top));font-size:12px;letter-spacing:.08em;color:#e8e2ff;text-shadow:0 0 6px #000;text-align:center;width:min(36vw,420px)}
+#core .bar i{background:linear-gradient(90deg,#ff7a4d,#ffd27a)}
+#banner{position:absolute;left:50%;top:22%;transform:translateX(-50%);width:min(88vw,620px);text-align:center;font-size:clamp(13px,2.3vmin,17px);line-height:1.55;
+  background:linear-gradient(90deg,transparent,rgba(10,20,40,.85) 15%,rgba(10,20,40,.85) 85%,transparent);padding:10px 30px;color:#cfeaff;opacity:0;transition:opacity .3s;word-break:keep-all}
+#banner.on{opacity:1}
+#banner b{color:#8fd8ff}
+#banner .skp{pointer-events:auto;margin-top:6px}
+#barks{position:absolute;left:max(10px,env(safe-area-inset-left));top:34%;display:flex;flex-direction:column;gap:6px;width:min(52vw,340px)}
+.bk{background:rgba(8,6,18,.78);border-left:3px solid currentColor;padding:6px 10px;border-radius:0 8px 8px 0;font-size:12.5px;line-height:1.45;animation:bkin .25s ease-out;word-break:keep-all}
+.bk b{display:block;font-size:11px;letter-spacing:.08em}
+.bk span{color:#ece8ff}
+@keyframes bkin{from{transform:translateX(-20px);opacity:0}}
+#combo{position:absolute;right:max(14px,env(safe-area-inset-right));top:20%;text-align:right;font-weight:900;font-size:clamp(20px,4vmin,34px);color:#fff;
+  text-shadow:0 0 10px #8a5cff;opacity:0;transition:opacity .2s}
+#combo small{display:block;font-size:11px;letter-spacing:.3em;color:#c9b6ff}
+#pauseB{position:absolute;right:max(10px,env(safe-area-inset-right));top:max(8px,env(safe-area-inset-top));pointer-events:auto!important;width:38px;height:38px;border-radius:50%;
+  border:1px solid rgba(160,140,255,.45);background:rgba(10,8,22,.7);font-size:14px;cursor:pointer}
+
+/* ---------- controls ---------- */
+#ctrl{position:absolute;inset:0;pointer-events:none}
+#joy{position:absolute;left:0;bottom:0;width:48%;height:72%;pointer-events:auto;touch-action:none}
+#joyB,#joyK{position:absolute;border-radius:50%;pointer-events:none;opacity:0;transition:opacity .15s}
+#joyB{width:120px;height:120px;margin:-60px 0 0 -60px;border:2px solid rgba(170,150,255,.35);background:rgba(30,20,60,.25)}
+#joyK{width:54px;height:54px;margin:-27px 0 0 -27px;background:radial-gradient(circle,rgba(200,185,255,.7),rgba(110,80,220,.45));box-shadow:0 0 14px rgba(150,120,255,.6)}
+#joyHint{position:absolute;left:max(18px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom));width:110px;height:110px;border-radius:50%;
+  border:2px dashed rgba(170,150,255,.22);display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(200,190,255,.45);pointer-events:none}
+#btns{position:absolute;right:max(14px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));width:232px;height:212px;pointer-events:none}
+.cb{position:absolute;pointer-events:auto;touch-action:none;border-radius:50%;border:2px solid rgba(180,160,255,.5);background:radial-gradient(circle at 50% 35%,rgba(70,50,140,.75),rgba(14,10,30,.85));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:12px;letter-spacing:.04em;color:#efeaff;cursor:pointer;overflow:hidden}
+.cb small{font-size:9px;font-weight:600;opacity:.75;letter-spacing:.02em}
+.cb.press{transform:scale(.93);filter:brightness(1.35)}
+.cb .cd{position:absolute;inset:0;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff}
+#bAtk{width:92px;height:92px;right:0;bottom:0;font-size:15px;border-color:rgba(200,180,255,.75)}
+#bDash{width:60px;height:60px;right:104px;bottom:0}
+#bSkill{width:60px;height:60px;right:96px;bottom:70px}
+#bTag{width:56px;height:56px;right:36px;bottom:104px}
+#bLink{width:56px;height:56px;right:150px;bottom:136px;border-color:rgba(255,220,150,.45)}
+#bLink.full{border-color:#ffe08a;box-shadow:0 0 18px rgba(255,210,120,.8);animation:lkp .5s infinite alternate}
+#keys{position:absolute;left:50%;transform:translateX(-50%);bottom:8px;font-size:11px;color:#7d7699;letter-spacing:.06em;white-space:nowrap}
+
+/* ---------- overlays ---------- */
+.ov{position:absolute;inset:0;background:rgba(4,3,10,.82);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;text-align:center}
+.ov h2{margin:0;font-size:clamp(22px,4.4vmin,36px);letter-spacing:.2em}
+.ov .stats{display:grid;grid-template-columns:auto auto;gap:6px 22px;font-size:14px;color:#cdc6ee;margin:6px 0 8px}
+.ov .stats b{color:#fff;text-align:right}
+.rank{font-size:56px;font-weight:900;background:linear-gradient(180deg,#fff,#b48cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+#rot{position:absolute;left:50%;top:44%;animation:fo 1s 5s forwards;transform:translateX(-50%);font-size:11px;color:#a49dc8;background:rgba(10,8,22,.7);padding:5px 10px;border-radius:8px;pointer-events:none}
+@keyframes fo{to{opacity:0}}
+@media (pointer:coarse),(max-width:700px){#keys{display:none}}
+@media (max-aspect-ratio:1/1){
+  #pl{width:44vw}
+  .pname{font-size:11px;letter-spacing:.02em}
+  #boss,#obj{left:auto;right:calc(max(10px,env(safe-area-inset-right)) + 46px);transform:none;width:calc(52vw - 60px)}
+  #boss .bn small{display:block;margin:0}
+  #barks{top:30%}
+}
+#flash{position:absolute;inset:0;pointer-events:none!important;background:#fff;opacity:0}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="ui">
+  <div id="title">
+    <img id="logo" alt="ACTING SOUL : 0" src="%%LOGO%%">
+    <div class="sub"><b>신들의 종언</b>SEASON 2 · 체험판 (0막 ~ 2막)</div>
+    <div class="menu">
+      <button class="btn" id="mNew">처음부터</button>
+      <button class="btn" id="mChap">막 선택</button>
+    </div>
+    <div class="hint" id="tHint">가로 화면 · 이어폰 사용을 추천해요</div>
+    <div class="ver" id="verT"></div>
+  </div>
+
+  <div id="chap" class="hide">
+    <h2>막 선택</h2>
+    <div class="list" id="chapList"></div>
+    <button class="sbtn" id="chapBack">돌아가기</button>
+  </div>
+
+  <div id="card" class="hide"><div class="n" id="cardN"></div><div class="t" id="cardT"></div><div class="line"></div></div>
+
+  <div id="dlg" class="hide">
+    <div class="por" id="dPor"></div>
+    <div class="box"><div class="nm" id="dNm"></div><div class="tx" id="dTx"></div><div class="nx">▼</div></div>
+  </div>
+  <div id="dlgbar" class="hide"><button class="sbtn" id="bAuto">AUTO</button><button class="sbtn" id="bSkip">SKIP ▶▶</button></div>
+
+  <div id="hud" class="hide">
+    <div id="pl">
+      <div class="pname" id="pnA"></div><div class="bar" id="hpA"><i></i></div>
+      <div class="mini"><div class="pname" id="pnB"></div><div class="bar" id="hpB"><i></i></div></div>
+      <div class="pname"><span style="color:#c9b6ff;font-weight:800">LINK 0</span><span id="lkT">0%</span></div><div class="bar" id="lk"><i></i></div>
+    </div>
+    <div id="boss"></div>
+    <div id="obj"></div>
+    <div id="banner"></div>
+    <div id="barks"></div>
+    <div id="combo"></div>
+    <div id="rot" class="hide">가로로 돌리면 더 넓게 보여요</div>
+  </div>
+  <button id="pauseB" class="hide">❚❚</button>
+
+  <div id="ctrl" class="hide">
+    <div id="joy"><div id="joyB"></div><div id="joyK"></div></div>
+    <div id="joyHint">이동</div>
+    <div id="btns">
+      <div class="cb" id="bAtk" data-a="atk">공격<small>J</small></div>
+      <div class="cb" id="bDash" data-a="dash">회피<small>K</small></div>
+      <div class="cb" id="bSkill" data-a="skill"><span id="skN">공허</span><small>L</small><div class="cd hide" id="skCd"></div></div>
+      <div class="cb" id="bTag" data-a="tag"><span id="tgN">교대</span><small>Q</small><div class="cd hide" id="tgCd"></div></div>
+      <div class="cb" id="bLink" data-a="link">링크<small>E</small></div>
+    </div>
+    <div id="keys">이동 WASD · 공격 J · 회피 K/Space · 스킬 L · 교대 Q · 링크 E · 일시정지 Esc</div>
+  </div>
+
+  <div id="pause" class="ov hide">
+    <h2>일시정지</h2>
+    <button class="btn" id="pRes">계속하기</button>
+    <button class="btn" id="pRetry">전투 다시 시작</button>
+    <button class="btn" id="pSnd">효과음: 켜짐</button>
+    <button class="btn" id="pTitle">타이틀로</button>
+  </div>
+  <div id="result" class="ov hide">
+    <h2>전투 승리</h2>
+    <div class="rank" id="rRank">S</div>
+    <div class="stats" id="rStats"></div>
+    <button class="btn gold" id="rNext">계속</button>
+  </div>
+  <div id="over" class="ov hide">
+    <h2 style="color:#ff8fa3">전투 불능</h2>
+    <div class="hint" id="oMsg">두 사람 모두 쓰러졌습니다.</div>
+    <button class="btn" id="oRetry">다시 도전</button>
+    <button class="btn" id="oTitle">타이틀로</button>
+  </div>
+  <div id="fin" class="ov hide">
+    <div class="n" style="letter-spacing:.5em;color:#a99be8;font-size:13px">ACTING SOUL : 0 — SEASON 2</div>
+    <h2>체험판 종료</h2>
+    <div class="hint" style="font-size:14px">플레이해 주셔서 감사합니다.<br>이야기는 <b style="color:#d7c9ff">제 3막 「추락의 끝 심연의 포식자」</b>로 이어집니다.</div>
+    <button class="btn" id="fTitle">타이틀로</button>
+    <div class="ver" id="verF"></div>
+  </div>
+  <div id="flash"></div>
+</div>
+<script>
+const IMG_SRC={eden:"%%EDEN%%",nesis:"%%NESIS%%"};
+%%JS%%
+</script>
+</body>
+</html>
