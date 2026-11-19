@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.2.0
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.3.0
    js/story.js — 등장인물, 대본, 대화 진행, 대화 장면(3D 무대)
 
    대본(RAW) 줄 형식
@@ -308,7 +308,7 @@ function buildChap(){
     b.onclick=()=>{SFX.ui();startChapter(i);};L.appendChild(b);});
 }
 function toTitle(){
-  ['fin','pause','over','result','hud','ctrl','pauseB','chap','card'].forEach(i=>show(i,false));hideDialog();releaseLock();
+  ['fin','pause','over','result','hud','ctrl','pauseB','chap','card','map','interact'].forEach(i=>show(i,false));GS.map=false;hideDialog();releaseLock();
   B=null;GS.mode='title';GS.bg='title';GS.paused=false;show('title',true);FX.clear();
 }
 

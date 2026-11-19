@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.2.0 · 3D -->
+<!-- 액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.3.0 · 3D -->
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#07060d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<title>액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판 v0.2.0)</title>
+<title>액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판 v0.3.0)</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -21,7 +21,7 @@
       <button class="btn" id="mNew">처음부터</button>
       <button class="btn" id="mChap">막 선택</button>
     </div>
-    <div class="hint" id="tHint">가로 화면 · 이어폰 사용을 추천해요</div>
+    <div class="hint" id="tHint">PC: 키보드 + 마우스 · 휴대폰: 가로 화면 터치 · 이어폰을 추천해요</div>
     <div class="ver" id="verT"></div>
   </div>
 
@@ -51,7 +51,25 @@
     <div id="barks"></div>
     <div id="combo"></div>
     <div id="rot" class="hide">가로로 돌리면 더 넓게 보여요</div>
-    <div id="keys">WASD 이동 · Shift 회피 · 우클릭 대쉬 · 좌클릭 공격 (0.5초 홀딩 강공격) · Q·E 스킬 · R 링크 0 · Tab 교대 · Esc 설정</div>
+    <canvas id="mini"></canvas>
+    <div id="interact" class="hide"></div>
+    <!-- PC 전용 HUD -->
+    <div id="party" class="pconly">
+      <div class="pt" id="pt_eden"><b>이든</b><span>대행자</span><div class="pbar"><i></i></div></div>
+      <div class="pt" id="pt_nesis"><b>네시스</b><span>집행자</span><div class="pbar"><i></i></div></div>
+      <div class="ptk"><span class="key">Tab</span> 전환</div>
+    </div>
+    <div id="ksbar" class="pconly">
+      <div class="ks" id="ksQ"><span class="key">Q</span><em id="ksQn"></em><div class="cd hide" id="ksQc"></div></div>
+      <div class="ks" id="ksE"><span class="key">E</span><em id="ksEn"></em><div class="cd hide" id="ksEc"></div></div>
+      <div class="ks big" id="ksR"><div class="rg" id="ksRg"></div><span class="key">R</span><em>링크 0</em><small id="ksRp">0%</small></div>
+    </div>
+    <div id="pchint" class="pconly">
+      <div><span class="key">좌클릭</span> 공격 · <span class="key">홀딩 0.5초</span> 강공격</div>
+      <div><span class="key">우클릭</span> 대쉬 · <span class="key">Shift</span> 회피</div>
+      <div><span class="key">Space</span> 점프 → <span class="key">좌클릭</span> 점프 공격 · <span class="key">Ctrl+좌클릭</span> 점프 강공격</div>
+      <div><span class="key">F</span> 줍기 · <span class="key">M</span> 지도 · <span class="key">Esc</span> 설정 <b id="ksH"></b></div>
+    </div>
   </div>
   <button id="pauseB" class="hide">❚❚</button>
 
@@ -67,7 +85,10 @@
       <div class="cb" id="bE" data-a="e"><span id="skE">뇌격</span><small>E</small><div class="cd hide" id="cdE"></div></div>
       <div class="cb" id="bR" data-a="r">링크<small>R</small></div>
       <div class="cb" id="bTag" data-a="tag"><span id="tgN">교대</span><div class="cd hide" id="cdT"></div></div>
+      <div class="cb" id="bJump" data-a="jump">점프</div>
+      <div class="cb hide" id="bF" data-a="f">줍기</div>
     </div>
+    <button class="sbtn" id="bMap">지도</button>
   </div>
 
   <div id="pause" class="ov hide">
@@ -76,7 +97,13 @@
     <button class="btn" id="pRetry">전투 다시 시작</button>
     <button class="btn" id="pSnd">효과음: 켜짐</button>
     <button class="btn" id="pSens">카메라 감도: 보통</button>
+    <button class="btn" id="pUI">조작 UI: 자동</button>
     <button class="btn" id="pTitle">타이틀로</button>
+  </div>
+  <div id="map" class="ov hide">
+    <div class="mapt" id="mapT"></div>
+    <canvas id="mapC"></canvas>
+    <div class="hint">M · Esc · 화면 터치로 닫기</div>
   </div>
   <div id="result" class="ov hide">
     <h2>전투 승리</h2>
@@ -103,10 +130,11 @@
 
 <!-- 1) 엔진 -->
 <script src="js/engine.js"></script>
-<!-- 2) 분리 에셋: 무기 아티팩트 → 아바타 캐릭터 → 이펙트 → 배경 -->
+<!-- 2) 분리 에셋: 무기 아티팩트 → 아바타 캐릭터 → 이펙트 → 아이템 → 배경 -->
 <script src="assets/weapons.js"></script>
 <script src="assets/avatars.js"></script>
 <script src="assets/effects.js"></script>
+<script src="assets/items.js"></script>
 <script src="assets/backgrounds.js"></script>
 <!-- 3) 게임 -->
 <script src="js/core.js"></script>

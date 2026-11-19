@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.2.0
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.3.0
    js/main.js — 시작과 메인 루프
    ================================================================== */
 'use strict';
@@ -15,7 +15,7 @@
     GS.t+=rdt;
     try{
       if(B&&(GS.mode==='battle'||GS.mode==='over'||GS.mode==='result')){
-        if(GS.mode==='battle')battleUpdate(rdt);
+        if(GS.mode==='battle'&&!GS.map)battleUpdate(rdt);
         if(B){render3D(rdt);updateHud();}
       }else{
         STAGE.set(GS.bg);STAGE.draw(rdt);dlgUpdate(rdt);

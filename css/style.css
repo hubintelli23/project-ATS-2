@@ -1,4 +1,4 @@
-/* 액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.2.0  · css/style.css */
+/* 액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.3.0  · css/style.css */
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 html,body{margin:0;height:100%;background:#07060d;overflow:hidden;color:#e9e6f5;
@@ -128,8 +128,6 @@ button{font-family:inherit;color:inherit}
 #bTag{width:46px;height:46px;right:78px;bottom:150px}
 #look{position:absolute;right:0;top:0;width:52%;height:100%;pointer-events:auto;touch-action:none}
 body:not(.touch) #ctrl{display:none!important}
-body.touch #keys{display:none}
-#keys{position:fixed;left:50%;transform:translateX(-50%);bottom:30px;font-size:11px;color:#7d7699;letter-spacing:.06em;white-space:nowrap}
 
 /* ---------- overlays ---------- */
 .ov{position:absolute;inset:0;background:rgba(4,3,10,.82);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;text-align:center}
@@ -150,3 +148,42 @@ body.touch #keys{display:none}
 #flash{position:absolute;inset:0;pointer-events:none!important;background:#fff;opacity:0}
 
 #nogl{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;background:#07060d;color:#e9e6f5;font-size:15px;line-height:1.7;z-index:9}
+
+/* ================= v0.3.0 — PC / 모바일 겸용 ================= */
+.key{display:inline-block;min-width:18px;padding:1px 6px;margin:0 2px;border:1px solid rgba(200,185,255,.55);border-radius:5px;background:rgba(20,14,40,.85);font-size:11px;font-weight:800;color:#efeaff;text-align:center;line-height:16px}
+body.touch .pconly{display:none!important}
+#mini{position:absolute;inset:auto;border-radius:10px;border:1px solid rgba(160,140,255,.4)}
+body.pc #mini{left:max(12px,env(safe-area-inset-left));top:max(10px,env(safe-area-inset-top));width:190px;height:140px}
+body.touch #mini{right:max(10px,env(safe-area-inset-right));top:calc(max(8px,env(safe-area-inset-top)) + 46px);width:104px;height:76px;opacity:.9}
+#interact{position:absolute;left:50%;top:62%;transform:translateX(-50%);background:rgba(8,6,18,.82);border:1px solid rgba(127,255,181,.5);padding:8px 16px;border-radius:10px;font-size:14px;font-weight:700;color:#d8ffe8;white-space:nowrap}
+body.touch #interact{top:56%;pointer-events:auto!important;cursor:pointer}
+#bJump{width:50px;height:50px;right:150px;bottom:150px}
+#bJump.air{border-color:#9fe2ff;box-shadow:0 0 14px rgba(140,210,255,.8)}
+#bF{width:52px;height:52px;right:18px;bottom:160px;border-color:rgba(127,255,181,.8);color:#d8ffe8}
+#bMap{position:absolute;right:calc(max(10px,env(safe-area-inset-right)) + 118px);top:calc(max(8px,env(safe-area-inset-top)) + 4px);pointer-events:auto}
+#map{background:rgba(4,3,10,.6);z-index:5}
+#map .mapt{font-weight:800;letter-spacing:.12em;color:#e8e2ff}
+#mapC{position:static;inset:auto;width:min(90vw,1100px);height:min(74vh,760px);border-radius:14px;border:1px solid rgba(160,140,255,.45)}
+/* PC 배치 (명조식): 체력 하단 중앙 · 파티 오른쪽 · 스킬바 오른쪽 아래 · 미니맵 왼쪽 위 */
+body.pc #pl{left:50%;transform:translateX(-50%);top:auto;bottom:max(18px,env(safe-area-inset-bottom));width:min(36vw,420px)}
+body.pc #pl .mini{display:none}
+body.pc #barks{top:auto;bottom:200px}
+body.pc #combo{top:30%}
+#party{position:absolute;right:max(16px,env(safe-area-inset-right));top:34%;display:flex;flex-direction:column;gap:8px;width:170px}
+.pt{background:rgba(8,6,18,.7);border:1px solid rgba(160,140,255,.25);border-radius:10px;padding:7px 10px;opacity:.65}
+.pt.on{opacity:1;border-color:rgba(200,185,255,.8);box-shadow:0 0 14px rgba(150,120,255,.35)}
+.pt.down{filter:grayscale(1);opacity:.4}
+.pt b{font-size:13px}.pt span{font-size:11px;color:#a9a2c9;margin-left:6px}
+.pbar{height:5px;background:rgba(0,0,0,.6);border-radius:3px;overflow:hidden;margin-top:5px}.pbar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#6b5cff,#9fe2ff)}
+.ptk{font-size:11px;color:#bdb5e0;text-align:right}
+#ksbar{position:absolute;right:max(20px,env(safe-area-inset-right));bottom:max(22px,env(safe-area-inset-bottom));display:flex;gap:12px;align-items:flex-end}
+.ks{position:relative;width:70px;height:66px;border-radius:14px;border:2px solid rgba(180,160,255,.55);background:radial-gradient(circle at 50% 30%,rgba(70,50,140,.8),rgba(12,9,26,.9));display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+.ks .key{position:absolute;left:4px;top:4px;margin:0;font-size:10px;min-width:14px;padding:0 4px}
+.ks em{font-style:normal;font-size:11px;font-weight:800;text-align:center;line-height:1.25;padding:0 4px;margin-top:10px}
+.ks .cd{position:absolute;inset:0;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800}
+.ks.big{width:84px;height:84px;border-radius:50%;border-color:rgba(255,220,150,.5)}
+.ks.big small{font-size:11px;color:#ffe08a;font-weight:700}
+.ks .rg{position:absolute;inset:0;border-radius:50%;background:conic-gradient(rgba(255,215,130,.45) var(--p,0%),transparent 0)}
+.ks.big.full{border-color:#ffe08a;box-shadow:0 0 22px rgba(255,210,120,.8);animation:lkp .5s infinite alternate}
+#pchint{position:absolute;right:max(20px,env(safe-area-inset-right));bottom:124px;text-align:right;font-size:11.5px;color:#cfc6ee;line-height:2;text-shadow:0 0 6px #000}
+#pchint b{color:#9fe2ff}

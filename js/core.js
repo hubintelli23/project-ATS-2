@@ -1,14 +1,16 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.2.0
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.3.0
    js/core.js — 화면 크기, 저장, 효과음, 입력(통일 조작 체계)
 
-   통일 조작 체계
-     WASD 이동 · Shift 회피 · 우클릭 대쉬 · 좌클릭 공격(0.5초 홀딩 = 강공격)
-     Q·E 스킬 · R 궁극기(링크 0) · Tab 교대 · Esc 설정
-     (F 상호작용 · M 지도는 이 체험판에 필요 없어 뺐음)
+   통일 조작 체계 (PC)
+     WASD 이동 · Shift 회피 · 우클릭 대쉬 · 좌클릭 공격 · 좌클릭 0.5초 홀딩 강공격
+     Space 점프 · Space+좌클릭 점프 공격 · Space+좌클릭+Ctrl 점프 강공격
+     Q·E 스킬 · R 궁극기(링크 0) · Tab 전환 · F 줍기(상호작용) · M 지도 · Esc 설정
+   휴대폰은 같은 기능을 화면 버튼으로 제공한다.
+   UI 모드: SAVE.ui = 'auto'(마지막 입력 기준 자동) | 'pc' | 'touch'
    ================================================================== */
 'use strict';
-const VERSION='v0.2.0';
+const VERSION='v0.3.0';
 const $=id=>document.getElementById(id);
 const PI=Math.PI,TAU=PI*2;
 const rand=(a,b)=>a+Math.random()*(b-a);
@@ -29,7 +31,7 @@ function resize(){
 }
 
 /* ---------------- 저장 ---------------- */
-const SAVE={unlocked:0,snd:true,sens:1};
+const SAVE={unlocked:0,snd:true,sens:1,ui:'auto'};
 try{const s=JSON.parse(localStorage.getItem('as0s2_save')||'{}');Object.assign(SAVE,s);}catch(e){}
 function persist(){try{localStorage.setItem('as0s2_save',JSON.stringify(SAVE));}catch(e){}}
 
@@ -78,18 +80,19 @@ const SFX={
 
 /* ---------------- 입력 ---------------- */
 const keys={};
-const inp={mx:0,my:0,jx:0,jy:0,atkDown:false,atkPress:false,atkRel:false,dodgeP:false,dashP:false,qP:false,eP:false,rP:false,tagP:false,
+const inp={mx:0,my:0,jx:0,jy:0,atkDown:false,atkPress:false,atkRel:false,atkCtrl:false,dodgeP:false,dashP:false,qP:false,eP:false,rP:false,tagP:false,jumpP:false,fP:false,mapP:false,
   lookX:0,lookY:0,lookT:9,touch:false};
-const GS={mode:'title',t:0,bg:'title',paused:false,locked:false};
-const KEYACT={ShiftLeft:'dodge',ShiftRight:'dodge',KeyQ:'q',KeyE:'e',KeyR:'r',Tab:'tag'};
+const GS={mode:'title',t:0,bg:'title',paused:false,locked:false,map:false};
+const KEYACT={ShiftLeft:'dodge',ShiftRight:'dodge',KeyQ:'q',KeyE:'e',KeyR:'r',Tab:'tag',Space:'jump',KeyF:'f'};
 window.addEventListener('keydown',e=>{
   audioInit();
-  if(e.code==='Tab')e.preventDefault();
+  if(e.code==='Tab'||(e.code==='Space'&&GS.mode==='battle'))e.preventDefault();
   if(e.repeat)return;
-  keys[e.code]=true;
+  keys[e.code]=true;autoUI('pc');
   const a=KEYACT[e.code];
-  if(a&&GS.mode==='battle'){inp[a+'P']=true;e.preventDefault();}
-  if(e.code==='Escape'){if(GS.mode==='battle'||GS.paused)togglePause();}
+  if(a&&GS.mode==='battle'&&!GS.paused&&!GS.map){inp[a+'P']=true;e.preventDefault();}
+  if(e.code==='KeyM'&&(GS.mode==='battle'||GS.map))toggleMap();
+  if(e.code==='Escape'){if(GS.map)toggleMap(false);else if(GS.mode==='battle'||GS.paused)togglePause();}
   if((e.code==='Enter'||e.code==='Space'||e.code==='KeyF')&&GS.mode==='dialog'){dlgAdvance();e.preventDefault();}
 });
 window.addEventListener('keyup',e=>{keys[e.code]=false;});
@@ -100,8 +103,9 @@ glc.addEventListener('contextmenu',e=>e.preventDefault());
 glc.addEventListener('mousedown',e=>{
   audioInit();
   if(GS.mode!=='battle'||GS.paused)return;
+  autoUI('pc');
   if(!GS.locked&&glc.requestPointerLock&&!inp.touch){try{glc.requestPointerLock();}catch(_){}}
-  if(e.button===0){inp.atkDown=true;inp.atkPress=true;}
+  if(e.button===0){inp.atkDown=true;inp.atkPress=true;inp.atkCtrl=e.ctrlKey||!!keys.ControlLeft||!!keys.ControlRight;}
   if(e.button===2)inp.dashP=true;
 });
 window.addEventListener('mouseup',e=>{if(e.button===0&&inp.atkDown){inp.atkDown=false;inp.atkRel=true;}});
@@ -112,10 +116,23 @@ document.addEventListener('pointerlockchange',()=>{
 });
 function releaseLock(){if(document.exitPointerLock&&GS.locked)try{document.exitPointerLock();}catch(_){}}
 
-/* 터치: 왼쪽 조이스틱 · 오른쪽 드래그 시점 · 버튼 */
-function useTouch(){if(!inp.touch){inp.touch=true;document.body.classList.add('touch');}}
+/* ---------- PC / 모바일 UI 전환 ---------- */
+function setUI(m){
+  const t=m==='touch';inp.touch=t;
+  document.body.classList.toggle('touch',t);document.body.classList.toggle('pc',!t);
+  if(t)releaseLock();
+}
+function autoUI(m){if(SAVE.ui==='auto'&&(m==='touch')!==inp.touch)setUI(m);}
+function applyUISetting(){
+  if(SAVE.ui==='pc')setUI('pc');else if(SAVE.ui==='touch')setUI('touch');
+  else setUI(window.matchMedia&&matchMedia('(pointer:coarse)').matches&&!matchMedia('(hover:hover)').matches?'touch':'pc');
+}
+function useTouch(){autoUI('touch');}
 window.addEventListener('touchstart',useTouch,{passive:true});
-if(window.matchMedia&&matchMedia('(pointer:coarse)').matches)useTouch();
+window.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'&&(Math.abs(e.movementX)+Math.abs(e.movementY))>2)autoUI('pc');});
+applyUISetting();
+
+/* 터치: 왼쪽 조이스틱 · 오른쪽 드래그 시점 · 버튼 */
 (function setupJoy(){
   const z=$('joy'),b=$('joyB'),k=$('joyK');let id=null,ox=0,oy=0;
   z.addEventListener('pointerdown',e=>{audioInit();id=e.pointerId;z.setPointerCapture(id);ox=e.clientX;oy=e.clientY;
@@ -132,7 +149,7 @@ if(window.matchMedia&&matchMedia('(pointer:coarse)').matches)useTouch();
 document.querySelectorAll('.cb').forEach(el=>{
   const a=el.dataset.a;
   el.addEventListener('pointerdown',e=>{audioInit();useTouch();el.setPointerCapture(e.pointerId);el.classList.add('press');
-    if(a==='atk'){inp.atkDown=true;inp.atkPress=true;}else inp[a+'P']=true;e.preventDefault();e.stopPropagation();});
+    if(a==='atk'){inp.atkDown=true;inp.atkPress=true;inp.atkCtrl=false;}else inp[a+'P']=true;e.preventDefault();e.stopPropagation();});
   const up=()=>{if(!el.classList.contains('press'))return;el.classList.remove('press');if(a==='atk'&&inp.atkDown){inp.atkDown=false;inp.atkRel=true;}};
   el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);el.addEventListener('lostpointercapture',up);
 });
@@ -144,7 +161,7 @@ function readMove(){
   if(keys.ArrowLeft){inp.lookX-=6;inp.lookT=0;}if(keys.ArrowRight){inp.lookX+=6;inp.lookT=0;}
   if(keys.ArrowUp){inp.lookY-=4;inp.lookT=0;}if(keys.ArrowDown){inp.lookY+=4;inp.lookT=0;}
 }
-function clearPresses(){inp.dodgeP=inp.dashP=inp.qP=inp.eP=inp.rP=inp.tagP=false;inp.atkPress=false;inp.lookX=inp.lookY=0;}
+function clearPresses(){inp.dodgeP=inp.dashP=inp.qP=inp.eP=inp.rP=inp.tagP=inp.jumpP=inp.fP=false;inp.atkPress=false;inp.lookX=inp.lookY=0;}
 
 function show(id,on){$(id).classList.toggle('hide',!on);}
 function flash(col,a){const f=$('flash');f.style.background=col||'#fff';f.style.transition='none';f.style.opacity=a||0.6;

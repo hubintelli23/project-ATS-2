@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.2.0
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.3.0
    assets/avatars.js — 아바타 캐릭터 (주인공 · 아군 · 적 · 보스)
 
    새 캐릭터 추가 방법
@@ -11,7 +11,7 @@
      anim(rig,s){}            // (선택) 기본은 animHuman
    };
    rig.root 를 게임이 움직이고, anim()이 팔다리를 움직인다.
-   s = {t, move(0~1), pose:'atk'|'heavy'|'cast'|'dash'|'hurt'|null, p(동작 진행 0~1), sw(±1 휘두르는 방향)}
+   s = {t, move(0~1), pose:'atk'|'heavy'|'cast'|'dash'|'hurt'|'jump'|'plunge'|null, p(동작 진행 0~1), sw(±1 휘두르는 방향), air(공중이면 true)}
    나중에 3D 모델 파일로 바꿀 때는 build()와 anim()만 교체하면 된다.
    ================================================================== */
 'use strict';
@@ -96,7 +96,10 @@ function animHuman(R,s,kind){
     case 'cast':R.armR.r=[-1.6,0,.15];R.armL.r=[-1.6,0,-.15];R.foreL.r=R.foreR.r=[-.1,0,0];R.torso.r[0]=-.08;break;
     case 'dash':R.torso.r[0]=.6;R.armL.r=[1.0,0,-.25];R.armR.r=[1.0,0,.25];R.legL.r[0]=-.7;R.legR.r[0]=.6;R.shinR.r[0]=.9;break;
     case 'hurt':R.torso.r[0]=-.4;R.head.r[0]=-.3;R.armL.r[2]=-.5;R.armR.r[2]=.5;break;
+    case 'jump':R.armL.r=[-.7,0,-.7];R.armR.r=[-.7,0,.7];R.torso.r[0]=.1;break;
+    case 'plunge':wb=1;R.armR.r=[-.45,0,.12];R.armL.r=[-.45,0,-.12];R.foreL.r=R.foreR.r=[0,0,0];R.torso.r[0]=.65;R.head.r[0]=.3;break;
   }
+  if(s.air){R.legL.r=[-.95,0,0];R.shinL.r=[1.5,0,0];R.legR.r=[-.35,0,0];R.shinR.r=[1.1,0,0];}
   if(s.float){R.legL.r=[.15,0,-.05];R.legR.r=[.25,0,.05];R.shinL.r=[.3,0,0];R.shinR.r=[.2,0,0];}
   for(const w of R.weapons){if(w.where==='back')continue;const r=w.def.rest;const k=1-wb;w.node.r[0]=r[0]*k;w.node.r[1]=r[1]*k;w.node.r[2]=r[2]*k;}
 }
