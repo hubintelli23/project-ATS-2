@@ -1,18 +1,30 @@
-/* ---------------- main loop ---------------- */
-let last=performance.now();
-function frame(now){
-  let rdt=Math.min(.05,(now-last)/1000);last=now;
-  if(GS.paused)rdt=0;
-  GS.t+=rdt;
-  try{
-    if(GS.mode==='battle'||GS.mode==='over'||(GS.mode==='result'&&B)){
-      if(B){if(GS.mode==='battle')battleUpdate(rdt);render();updateHud();}
-    }else{
-      drawBg(GS.bg,GS.t);
-      dlgUpdate(rdt);
-    }
-  }catch(err){console.error(err);}
+/* ==================================================================
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.2.0
+   js/main.js — 시작과 메인 루프
+   ================================================================== */
+'use strict';
+(function boot(){
+  let ok=false;
+  try{ok=R3.init(glc);}catch(e){console.error(e);ok=false;}
+  if(!ok){$('nogl').classList.remove('hide');return;}
+  FX.init();resize();window.addEventListener('resize',resize);
+  let last=performance.now();
+  function frame(now){
+    let rdt=Math.min(.05,(now-last)/1000);last=now;
+    if(GS.paused)rdt=0;
+    GS.t+=rdt;
+    try{
+      if(B&&(GS.mode==='battle'||GS.mode==='over'||GS.mode==='result')){
+        if(GS.mode==='battle')battleUpdate(rdt);
+        if(B){render3D(rdt);updateHud();}
+      }else{
+        STAGE.set(GS.bg);STAGE.draw(rdt);dlgUpdate(rdt);
+        ov.setTransform(1,0,0,1,0,0);ov.clearRect(0,0,ovc.width,ovc.height);
+      }
+    }catch(err){console.error(err);}
+    requestAnimationFrame(frame);
+  }
   requestAnimationFrame(frame);
-}
-requestAnimationFrame(frame);
-window.ASDBG={GS,get B(){return B},get P(){return P},inp,startBattle,startChapter,nextStep,skipToAction,run,SAVE};
+})();
+/* 테스트·디버그용 접근점 */
+window.ASDBG={GS,get B(){return B},get P(){return P},inp,startBattle,startChapter,nextStep,skipToAction,run,SAVE,R3,STAGE};
