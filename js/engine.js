@@ -110,6 +110,11 @@ const GEO={
     for(let i=0;i<=seg;i++){const a=i/seg*Math.PI*2,ca=Math.cos(a),sa=Math.sin(a);
       for(let j=0;j<=seg2;j++){const b=j/seg2*Math.PI*2,cb=Math.cos(b),sb=Math.sin(b);g.v((R+r*cb)*ca,r*sb,(R+r*cb)*sa,cb*ca,sb,cb*sa,c);}}
     for(let i=0;i<seg;i++)for(let j=0;j<seg2;j++){const a=i*(seg2+1)+j,b=a+seg2+1;g.i.push(a,b,a+1,b,b+1,a+1);}return g;},
+  /* 원호(부분 도넛): 반지름 R, 굵기 r, 시작각 a0 에서 len 만큼. XZ 평면 */
+  arc(R,r,a0,len,seg,seg2,col){const g=new Geo(),c=hex(col||'#fff');seg=seg||16;seg2=seg2||6;
+    for(let i=0;i<=seg;i++){const a=a0+i/seg*len,ca=Math.cos(a),sa=Math.sin(a);
+      for(let j=0;j<=seg2;j++){const b=j/seg2*Math.PI*2,cb=Math.cos(b),sb=Math.sin(b);g.v((R+r*cb)*ca,r*sb,(R+r*cb)*sa,cb*ca,sb,cb*sa,c);}}
+    for(let i=0;i<seg;i++)for(let j=0;j<seg2;j++){const a=i*(seg2+1)+j,b=a+seg2+1;g.i.push(a,b,a+1,b,b+1,a+1);}return g;},
   merge(...gs){const g=new Geo();g.add(...gs);return g;},
 };
 

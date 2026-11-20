@@ -14,7 +14,8 @@
     if(GS.paused)rdt=0;
     GS.t+=rdt;
     try{
-      if(B&&(GS.mode==='battle'||GS.mode==='over'||GS.mode==='result')){
+      if(GS.view==='halo'){STAGE.set('haloview');STAGE.draw(Math.min(.05,ms/1000));ov.setTransform(1,0,0,1,0,0);ov.clearRect(0,0,ovc.width,ovc.height);}
+      else if(B&&(GS.mode==='battle'||GS.mode==='over'||GS.mode==='result')){
         if(GS.mode==='battle'&&!GS.map)battleUpdate(rdt);
         if(B){render3D(rdt);updateHud();}
       }else{

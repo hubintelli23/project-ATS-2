@@ -202,3 +202,14 @@ BACKGROUNDS.waste={name:'제5 외곽 폐기 구역',cfg:cfgOf({sky:['#2a1a3e','#
 BACKGROUNDS.phasis={name:'파시스 강림',cfg:cfgOf({sky:['#4a1866','#0e0614'],fog:'#22102e',fogN:18,fogF:90,lightCol:'#e0b8ff',ambTop:'#5a3a7a',ambBot:'#160c1e'}),
   cast:[{id:'eden',dx:-.9,dz:0,face:-Math.PI/2+.2},{id:'nesis',dx:.9,dz:.2,face:-Math.PI/2-.2},{id:'phasis',dx:0,dz:-9,face:Math.PI/2}],
   build(o){return wasteBuild(o,true);}};
+
+/* ================= 헤일로 보기 (마스터 모드) ================= */
+BACKGROUNDS.haloview={name:'헤일로 보기',cfg:cfgOf({sky:['#0c0820','#020106'],fog:'#05030c',fogN:30,fogF:120}),cast:[],
+  cam:{pos:[20,2.4,28.5],tgt:[20,2.3,20]},
+  build(o){const m=motes(20,20,40,20,'#b9a4ff',1);
+    return{draw(t){
+      drawHalo('eden',16.4,2.5,20,0,1.6,t,1,false);
+      drawHalo('resonance',20,2.5,19.6,0,1.9,t,1,false);
+      drawHalo('nesis',23.6,2.5,20,0,1.6,t,1,false);
+      m(t);}};
+  }};

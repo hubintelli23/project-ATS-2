@@ -5,13 +5,13 @@
    통일 조작 체계 (PC)
      WASD 이동 · Shift 회피 · 우클릭 대쉬 · 좌클릭 공격 · 좌클릭 0.5초 홀딩 강공격
      Space 점프 · Space+좌클릭 점프 공격 · Space+좌클릭+Ctrl 점프 강공격
-     Q·E 스킬 · R 궁극기(링크 0) · Tab 전환 · X(휠) 무기 전환 · Z 호출 · F 줍기(상호작용) · M 지도 · Esc 설정
+     Q·E 스킬 · R 짧게 개인 궁극기 / R 0.5초 홀딩 링크 0 · Tab 전환 · X(휠) 무기 전환 · Z 호출 · F 줍기(상호작용) · M 지도 · Esc 설정
    휴대폰은 같은 기능을 화면 버튼으로 제공한다.
    UI 모드: SAVE.ui = 'auto'(마지막 입력 기준 자동) | 'pc' | 'touch'
    마스터 모드: F2 또는 ` 키로 켜기/끄기
    ================================================================== */
 'use strict';
-const VERSION='v0.6.1';
+const VERSION='v0.6.0';
 const $=id=>document.getElementById(id);
 const PI=Math.PI,TAU=PI*2;
 const rand=(a,b)=>a+Math.random()*(b-a);
@@ -36,7 +36,7 @@ const SAVE={unlocked:0,snd:true,sens:1,ui:'auto',gfx:'auto',master:null};
 try{const s=JSON.parse(localStorage.getItem('as0s2_save')||'{}');Object.assign(SAVE,s);}catch(e){}
 /* 마스터 모드 (테스트·감상용): on 이 켜져 있을 때만 각 항목이 적용된다 */
 SAVE.master=Object.assign({on:false,skip:true,nocd:true,god:false,link:false,dmg:false,unlock:true},SAVE.master||{});
-const MASTER_OPTS=[['skip','스토리·전투 건너뛰기 버튼'],['nocd','쿨타임 제거 (스킬·교대·회피·대쉬)'],['god','무적 (방어막 발생기 포함)'],['link','링크 게이지 무한'],['dmg','공격력 10배'],['unlock','모든 막 열기']];
+const MASTER_OPTS=[['skip','스토리·전투 건너뛰기 버튼'],['nocd','쿨타임 제거 (스킬·교대·회피·대쉬)'],['god','무적 (방어막 발생기 포함)'],['link','링크·궁극기 게이지 무한'],['dmg','공격력 10배'],['unlock','모든 막 열기']];
 function M(k){return SAVE.master.on&&!!SAVE.master[k];}
 
 /* ---------------- 그래픽 해상도 (휴대폰 최적화) ----------------
@@ -105,8 +105,8 @@ const SFX={
 const keys={};
 const inp={mx:0,my:0,jx:0,jy:0,atkDown:false,atkPress:false,atkRel:false,atkCtrl:false,dodgeP:false,dashP:false,qP:false,eP:false,rP:false,tagP:false,jumpP:false,fP:false,swapP:false,callP:false,
   lookX:0,lookY:0,lookT:9,touch:false};
-const GS={mode:'title',t:0,bg:'title',paused:false,locked:false,map:false};
-const KEYACT={ShiftLeft:'dodge',ShiftRight:'dodge',KeyQ:'q',KeyE:'e',KeyR:'r',Tab:'tag',Space:'jump',KeyF:'f',KeyX:'swap',KeyZ:'call'};
+const GS={mode:'title',t:0,bg:'title',paused:false,locked:false,map:false,view:null};
+const KEYACT={ShiftLeft:'dodge',ShiftRight:'dodge',KeyQ:'q',KeyE:'e',Tab:'tag',Space:'jump',KeyF:'f',KeyX:'swap',KeyZ:'call'};
 window.addEventListener('keydown',e=>{
   audioInit();
   if(e.code==='F2'||e.code==='Backquote'){e.preventDefault();if(!e.repeat)toggleMasterMode();return;}
@@ -115,13 +115,14 @@ window.addEventListener('keydown',e=>{
   keys[e.code]=true;autoUI('pc');
   const a=KEYACT[e.code];
   if(a&&GS.mode==='battle'&&!GS.paused&&!GS.map){inp[a+'P']=true;e.preventDefault();}
+  if(e.code==='KeyR'&&GS.mode==='battle'&&!GS.paused){inp.rDown=true;inp.rPress=true;inp.rT0=performance.now();}
   if(e.code==='KeyM'&&(GS.mode==='battle'||GS.map))toggleMap();
   if(e.code==='Escape'){if(GS.map)toggleMap(false);else if(GS.mode==='battle'||GS.paused)togglePause();}
   if((e.code==='Enter'||e.code==='Space'||e.code==='KeyF')&&GS.mode==='dialog'){dlgAdvance();e.preventDefault();}
 });
-window.addEventListener('keyup',e=>{keys[e.code]=false;});
+window.addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='KeyR'&&inp.rDown){inp.rDown=false;inp.rRel=true;}});
 let wheelT=0;window.addEventListener('wheel',e=>{if(GS.mode!=='battle'||GS.paused||GS.map)return;const n=performance.now();if(n-wheelT>350&&Math.abs(e.deltaY)>4){wheelT=n;inp.swapP=true;}},{passive:true});
-window.addEventListener('blur',()=>{for(const k in keys)keys[k]=false;inp.atkDown=false;inp.jx=inp.jy=0;});
+window.addEventListener('blur',()=>{for(const k in keys)keys[k]=false;inp.atkDown=false;inp.rDown=false;inp.jx=inp.jy=0;});
 
 /* 마우스: 포인터 잠금 상태에서 시점 회전 / 좌클릭 공격 / 우클릭 대쉬 */
 glc.addEventListener('contextmenu',e=>e.preventDefault());
@@ -130,7 +131,7 @@ glc.addEventListener('mousedown',e=>{
   if(GS.mode!=='battle'||GS.paused)return;
   autoUI('pc');
   if(!GS.locked&&glc.requestPointerLock&&!inp.touch){try{glc.requestPointerLock();}catch(_){}}
-  if(e.button===0){inp.atkDown=true;inp.atkPress=true;inp.atkCtrl=e.ctrlKey||!!keys.ControlLeft||!!keys.ControlRight;}
+  if(e.button===0){inp.atkDown=true;inp.atkPress=true;inp.atkT0=performance.now();inp.atkCtrl=e.ctrlKey||!!keys.ControlLeft||!!keys.ControlRight;}
   if(e.button===2)inp.dashP=true;
 });
 window.addEventListener('mouseup',e=>{if(e.button===0&&inp.atkDown){inp.atkDown=false;inp.atkRel=true;}});
@@ -174,8 +175,8 @@ applyUISetting();
 document.querySelectorAll('.cb').forEach(el=>{
   const a=el.dataset.a;
   el.addEventListener('pointerdown',e=>{audioInit();useTouch();el.setPointerCapture(e.pointerId);el.classList.add('press');
-    if(a==='atk'){inp.atkDown=true;inp.atkPress=true;inp.atkCtrl=false;}else inp[a+'P']=true;e.preventDefault();e.stopPropagation();});
-  const up=()=>{if(!el.classList.contains('press'))return;el.classList.remove('press');if(a==='atk'&&inp.atkDown){inp.atkDown=false;inp.atkRel=true;}};
+    if(a==='atk'){inp.atkDown=true;inp.atkPress=true;inp.atkT0=performance.now();inp.atkCtrl=false;}else if(a==='r'){inp.rDown=true;inp.rPress=true;inp.rT0=performance.now();}else inp[a+'P']=true;e.preventDefault();e.stopPropagation();});
+  const up=()=>{if(!el.classList.contains('press'))return;el.classList.remove('press');if(a==='atk'&&inp.atkDown){inp.atkDown=false;inp.atkRel=true;}if(a==='r'&&inp.rDown){inp.rDown=false;inp.rRel=true;}};
   el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);el.addEventListener('lostpointercapture',up);
 });
 function readMove(){

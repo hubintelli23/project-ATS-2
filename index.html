@@ -44,6 +44,7 @@
     <div id="pl">
       <div class="pname" id="pnA"></div><div class="bar" id="hpA"><i></i></div>
       <div class="mini"><div class="pname" id="pnB"></div><div class="bar" id="hpB"><i></i></div></div>
+      <div class="pname"><span style="color:#ffd27a;font-weight:800" id="ulN">궁극기</span><span id="ulT">0%</span></div><div class="bar" id="ul"><i></i></div>
       <div class="pname"><span style="color:#c9b6ff;font-weight:800">LINK 0</span><span id="lkT">0%</span></div><div class="bar" id="lk"><i></i></div>
     </div>
     <div id="boss"></div>
@@ -65,12 +66,13 @@
       <div class="ks" id="ksZ"><span class="key">Z</span><em id="ksZn"></em><div class="cd hide" id="ksZc"></div></div>
       <div class="ks" id="ksQ"><span class="key">Q</span><em id="ksQn"></em><div class="cd hide" id="ksQc"></div></div>
       <div class="ks" id="ksE"><span class="key">E</span><em id="ksEn"></em><div class="cd hide" id="ksEc"></div></div>
-      <div class="ks big" id="ksR"><div class="rg" id="ksRg"></div><span class="key">R</span><em>링크 0</em><small id="ksRp">0%</small></div>
+      <div class="ks big" id="ksR"><div class="rg" id="ksRg"></div><span class="key">R</span><em id="ksRn">궁극기</em><small id="ksRp">0%</small><small class="ksl2" id="ksL"></small></div>
     </div>
     <div id="pchint" class="pconly">
       <div><span class="key">좌클릭</span> 공격 · <span class="key">홀딩 0.5초</span> 강공격</div>
       <div><span class="key">우클릭</span> 대쉬 · <span class="key">Shift</span> 회피</div>
       <div><span class="key">Space</span> 점프 → <span class="key">좌클릭</span> 점프 공격 · <span class="key">Ctrl+좌클릭</span> 점프 강공격</div>
+      <div><span class="key">R</span> 궁극기 · <span class="key">R 홀딩 0.5초</span> 링크 0</div>
       <div><span class="key">X</span>·<span class="key">휠</span> 무기 전환 · <span class="key">Z</span> 호출 · <span class="key">Tab</span> 캐릭터 전환</div>
       <div><span class="key">F</span> 줍기 · <span class="key">M</span> 지도 · <span class="key">Esc</span> 설정 · <span class="key">F2</span> 마스터 <b id="ksH"></b></div>
     </div>
@@ -89,7 +91,7 @@
       <div class="cb" id="bDash" data-a="dash">대쉬</div>
       <div class="cb" id="bQ" data-a="q"><span id="skQ">공허</span><small>Q</small><div class="cd hide" id="cdQ"></div></div>
       <div class="cb" id="bE" data-a="e"><span id="skE">뇌격</span><small>E</small><div class="cd hide" id="cdE"></div></div>
-      <div class="cb" id="bR" data-a="r">링크<small>R</small></div>
+      <div class="cb" id="bR" data-a="r">궁극기<small>길게: 링크</small></div>
       <div class="cb" id="bTag" data-a="tag"><span id="tgN">교대</span><div class="cd hide" id="cdT"></div></div>
       <div class="cb" id="bJump" data-a="jump">점프</div>
       <div class="cb" id="bSwap" data-a="swap"><span id="swN">무기</span><small>무기 전환</small></div>
@@ -122,6 +124,7 @@
     <div class="mgrid" id="mOpts"></div>
     <div class="hint" style="margin-top:4px">전투 바로가기 (끝나면 그 다음 이야기로 이어져요)</div>
     <div class="mrow" id="mJump"></div>
+    <button class="sbtn mst" id="mHalo">헤일로 보기 (이든 · 네시스 · 공명)</button>
     <button class="sbtn" id="mClose">닫기</button>
   </div>
   <div id="result" class="ov hide">
@@ -143,6 +146,11 @@
     <button class="btn" id="fTitle">타이틀로</button>
     <div class="ver" id="verF"></div>
   </div>
+  <div id="haloV" class="hide">
+    <div class="hvt">헤일로 문양 미리보기 <small>assets/halos.js 에서 수정</small></div>
+    <div class="hvl"><div><b style="color:#c9a0ff">이든의 헤일로</b><span>분열된 궤도형 + 공허의 중심형 · 고리 5</span></div><div><b style="color:#f0e6ff">공명 헤일로</b><span>공허 중심 + 융합 고리 + 파편 궤도 · 고리 7</span></div><div><b style="color:#9fdcff">네시스의 헤일로</b><span>수렴 나선형 + 융합 고리형 · 고리 5</span></div></div>
+    <button class="btn" id="hvClose">닫기</button>
+  </div>
   <div id="toast"></div>
   <div id="flash"></div>
 </div>
@@ -150,17 +158,17 @@
 
 <!-- 1) 엔진 -->
 <script src="js/engine.js"></script>
-<!-- 2) 분리 에셋: 무기 아티팩트 → 아바타 캐릭터 → 이펙트 → 아이템 → 배경 -->
+<!-- 2) 분리 에셋: 무기 아티팩트 → 아바타 캐릭터 → 이펙트 → 헤일로 → 아이템 → 배경 -->
 <script src="assets/weapons.js"></script>
 <script src="assets/avatars.js"></script>
 <script src="assets/effects.js"></script>
+<script src="assets/halos.js"></script>
 <script src="assets/items.js"></script>
 <script src="assets/backgrounds.js"></script>
 <!-- 3) 게임 -->
 <script src="js/core.js"></script>
 <script src="js/story.js"></script>
 <script src="js/battle.js"></script>
-<script src="js/domain.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

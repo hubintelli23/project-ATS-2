@@ -303,6 +303,7 @@ function toggleMasterMode(){
 }
 let toastT=null;
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),1600);}
+$('mHalo').onclick=()=>{SFX.ui();show('master',false);openHaloView();};
 $('mOn').onclick=()=>{SAVE.master.on=!SAVE.master.on;persist();SFX.ui();masterUI();};
 $('mClose').onclick=()=>{SFX.ui();show('master',false);masterRefresh();if(!$('chap').classList.contains('hide'))buildChap();};
 $('mMaster').onclick=()=>{audioInit();SFX.ui();openMaster();};
@@ -371,6 +372,7 @@ const STAGE={key:null,env:null,cfg:null,cast:[],rigs:{},speaker:null,t:0,W:40,
     const ttl=this.key==='title',R=ttl?13:4.8,by=this.cast.reduce((m,c)=>Math.max(m,c.y),0);
     R3.cam.pos=[cx+Math.sin(a)*R,(ttl?3.2:1.45)+by,cz+(ttl?3:0)+Math.cos(a)*R+(by?3:0)];
     R3.cam.tgt=[this._fx,(ttl?4.5:.45)+by,this._fz];R3.cam.fov=.9;
+    if(this.def.cam){R3.cam.pos=this.def.cam.pos.slice();R3.cam.tgt=this.def.cam.tgt.slice();}
     R3.begin(this.cfg);
     drawSky(this.key,this.cfg);
     this.env.draw(t);

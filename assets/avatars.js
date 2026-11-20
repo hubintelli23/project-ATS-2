@@ -37,22 +37,17 @@ function humanoid(o){
   if(o.neon)addTo(R.torso,Node(m('neon',()=>GEO.merge(GEO.box(.016,.42,.01,'#fff').tr(.065,.27,.122*bw),GEO.box(.016,.42,.01,'#fff').tr(-.065,.27,.122*bw),GEO.box(.3*bw,.014,.01,'#fff').tr(0,.47,.125*bw))),{mode:1,tint:hex(o.neon).slice()}));
   if(o.core)addTo(R.torso,Node(m('core',()=>GEO.sph(.07,10,'#fff').tr(0,.32,.16*bw)),{mode:1,tint:hex(o.core).slice(),name:'core'}));
   // 목 + 얼굴 + 머리카락을 하나의 메시로 합쳐 그리기 횟수를 줄인다
-  const headGeoF=(hr,tip,stk)=>{
+  R.head=addTo(R.torso,Node(m('head',()=>{
     const g=GEO.merge(GEO.cyl(.05,.055,.1,8,o.skin).tr(0,.04,0),GEO.sph(.115,12,o.skin).sc(1,1.08,1).tr(0,.17,0),
-      GEO.sph(.128,12,hr).sc(1.03,.96,1.06).tr(0,.205,-.018),GEO.box(.25,.07,.06,hr).tr(0,.27,.09),
-      GEO.box(.05,.2,.08,hr).tr(.117,.13,.02),GEO.box(.05,.2,.08,hr).tr(-.117,.13,.02));
-    if(o.hairLong)g.add(GEO.box(.25,o.hairLong,.07,hr).tr(0,.2-o.hairLong/2,-.1));
-    if(o.bun)g.add(GEO.sph(.075,10,hr).tr(0,.3,-.13));
-    if(tip)g.add(GEO.box(.054,.06,.084,tip).tr(.117,.02,.02),GEO.box(.054,.06,.084,tip).tr(-.117,.02,.02));
-    if(stk)g.add(GEO.box(.045,.09,.066,stk).tr(.065,.26,.1),GEO.box(.03,.22,.075,stk).tr(.118,.12,.02));
+      GEO.sph(.128,12,o.hair).sc(1.03,.96,1.06).tr(0,.205,-.018),GEO.box(.25,.07,.06,o.hair).tr(0,.27,.09),
+      GEO.box(.05,.2,.08,o.hair).tr(.117,.13,.02),GEO.box(.05,.2,.08,o.hair).tr(-.117,.13,.02));
+    if(o.hairLong)g.add(GEO.box(.25,o.hairLong,.07,o.hair).tr(0,.2-o.hairLong/2,-.1));
+    if(o.bun)g.add(GEO.sph(.075,10,o.hair).tr(0,.3,-.13));
+    if(o.hairTip)g.add(GEO.box(.054,.06,.084,o.hairTip).tr(.117,.02,.02),GEO.box(.054,.06,.084,o.hairTip).tr(-.117,.02,.02));
+    if(o.streak)g.add(GEO.box(.045,.09,.066,o.streak).tr(.065,.26,.1),GEO.box(.03,.22,.075,o.streak).tr(.118,.12,.02));
     if(o.helmet)g.add(GEO.sph(.14,10,o.helmet).sc(1,.9,1.1).tr(0,.2,0),GEO.box(.2,.03,.02,'#b46cff').tr(0,.18,.14));
-    return g;};
-  R.head=addTo(R.torso,Node(m('head',()=>headGeoF(o.hair,o.hairTip,o.streak))),[0,.54,0]);
-  R.eyes=addTo(R.head,Node(m('eyes',()=>GEO.merge(GEO.box(.036,.02,.01,'#fff').tr(.045,.17,.109),GEO.box(.036,.02,.01,'#fff').tr(-.045,.17,.109))),{mode:1,tint:hex(o.eye||'#6a5cff').slice()}));
-  const eye0=R.eyes.tint.slice();R.look=null;
-  R.setLook=(hair,eye)=>{const key=hair?hair+'|'+eye:null;if(R.look===key)return;R.look=key;
-    if(hair){R.head.mesh=m('headv_'+hair.slice(1),()=>headGeoF(hair,hair,hair));R.eyes.tint=hex(eye).slice();}
-    else{R.head.mesh=m('head',()=>headGeoF(o.hair,o.hairTip,o.streak));R.eyes.tint=eye0.slice();}};
+    return g;})),[0,.54,0]);
+  addTo(R.head,Node(m('eyes',()=>GEO.merge(GEO.box(.036,.02,.01,'#fff').tr(.045,.17,.109),GEO.box(.036,.02,.01,'#fff').tr(-.045,.17,.109))),{mode:1,tint:hex(o.eye||'#6a5cff').slice()}));
   for(const [s,nm] of [[-1,'L'],[1,'R']]){
     const arm=addTo(R.torso,Node(m('upper',()=>GEO.cyl(.06*bw,.05*bw,.3,8,o.sleeve||o.coat).tr(0,-.15,0))),[s*.235*bw,.47,0]);
     const fore=addTo(arm,Node(m('fore',()=>GEO.merge(GEO.cyl(.05*bw,.043*bw,.27,8,o.sleeve||o.coat).tr(0,-.135,0),GEO.sph(.048*bw,8,o.glove||o.skin).tr(0,-.29,0)))),[0,-.3,0]);
