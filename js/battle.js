@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.6.0
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.6.1
    js/battle.js — 전투 (3인칭 백뷰)
 
    게임 판정은 평면 좌표(px)로 계산하고, 그릴 때 S(=1/30)를 곱해 미터로 바꾼다.
@@ -12,22 +12,22 @@
 const S=1/30;
 const CH={
   eden:{name:'이든',title:'대행자',maxhp:520,spd:255,col:'#b49bff',weapons:['sentia','sensus'],
-    q:{n:'공허',full:'태초의 공허',cd:9},e:{n:'뇌격',full:'센티아 뇌격',cd:7},heavy:'센수스 회전베기',
+    q:{n:'공허',full:'태초의 공허',cd:9},heavy:'센수스 회전베기',
     ult:{n:'공허 궤도',desc:'헤일로가 전장 위에서 펼쳐져 적을 끌어당기고 삼킨 뒤 붕괴시킨다'}},
   nesis:{name:'네시스',title:'집행자',maxhp:600,spd:238,col:'#9fdcff',weapons:['eruptio','klausroom'],
-    q:{n:'흡융',full:'흡융',cd:10},e:{n:'폭염',full:'이럽디오 폭염',cd:7},heavy:'대검 내려찍기',
+    q:{n:'흡융',full:'흡융',cd:10},heavy:'대검 내려찍기',
     ult:{n:'융합 나선',desc:'다섯 융합 고리가 퍼졌다가 중심으로 수렴하며 적의 힘을 흡수하고 아군을 회복시킨다'}},
 };
-/* 무기별 기본 공격(3연격)과 호출 스킬. 손에 든 무기에 따라 공격이 바뀌고, 등에 멘 무기는 Z(호출)로 불러낸다.
+/* 무기별 기본 공격(3연격) · E 스킬 · 호출 스킬. Q 스킬과 궁극기는 캐릭터 고유, E 스킬은 손에 든 무기를 따른다. 손에 든 무기에 따라 공격이 바뀌고, 등에 멘 무기는 Z(호출)로 불러낸다.
    fin = 3타째 추가 효과: chain(연쇄 번개) · gust(폭풍 파동) · wave(불꽃 파동) · pierce(관통 찌르기) */
 const KIT={
-  sentia:{col:'#59c8ff',combo:[{d:.18,r:84,a:1.8,dmg:9},{d:.18,r:84,a:1.8,dmg:9},{d:.3,r:100,a:2.4,dmg:15,fin:'chain'}],
+  sentia:{col:'#59c8ff',e:{n:'뇌격',full:'센티아 뇌격',cd:7},combo:[{d:.18,r:84,a:1.8,dmg:9},{d:.18,r:84,a:1.8,dmg:9},{d:.3,r:100,a:2.4,dmg:15,fin:'chain'}],
     call:{n:'뇌전 일섬',cd:12,bark:['센티아','사각 확보. 일직선으로 꿰뚫는다!']}},
-  sensus:{col:'#c77dff',combo:[{d:.24,r:96,a:2.5,dmg:12},{d:.24,r:96,a:2.5,dmg:12},{d:.36,r:112,a:3.2,dmg:19,fin:'gust'}],
+  sensus:{col:'#c77dff',e:{n:'폭풍 돌진',full:'센수스 폭풍 돌진',cd:7},combo:[{d:.24,r:96,a:2.5,dmg:12},{d:.24,r:96,a:2.5,dmg:12},{d:.36,r:112,a:3.2,dmg:19,fin:'gust'}],
     call:{n:'폭풍 난무',cd:12,bark:['센수스','나왔다아! 다 날려버릴 거야!']}},
-  eruptio:{col:'#5aa9ff',combo:[{d:.3,r:108,a:2.6,dmg:15},{d:.3,r:108,a:2.6,dmg:15},{d:.45,r:122,a:3.4,dmg:24,fin:'wave'}],
+  eruptio:{col:'#5aa9ff',e:{n:'폭염',full:'이럽디오 폭염',cd:7},combo:[{d:.3,r:108,a:2.6,dmg:15},{d:.3,r:108,a:2.6,dmg:15},{d:.45,r:122,a:3.4,dmg:24,fin:'wave'}],
     call:{n:'염화 강타',cd:12,bark:['이럽디오','길을 막는 것은 전부 녹여주마!']}},
-  klausroom:{col:'#f2f6ff',combo:[{d:.2,r:92,a:1.7,dmg:11},{d:.2,r:92,a:1.7,dmg:11},{d:.32,r:100,a:1.2,dmg:16,fin:'pierce'}],
+  klausroom:{col:'#f2f6ff',e:{n:'섬광 연참',full:'클라우스룸 섬광 연참',cd:6},combo:[{d:.2,r:92,a:1.7,dmg:11},{d:.2,r:92,a:1.7,dmg:11},{d:.32,r:100,a:1.2,dmg:16,fin:'pierce'}],
     call:{n:'백야 일섬',cd:12,bark:['클라우스룸','정지된 궤적을 베겠습니다.']}},
 };
 const heldOf=k=>P.held[k],backOf=k=>CH[k].weapons.find(w=>w!==P.held[k]);
@@ -126,7 +126,7 @@ const TUT=[
   {p:'<b>에토스</b> · 쓰러진 적은 아이템을 떨어뜨립니다. 가까이 가서 <b>F</b>(휴대폰: 줍기 버튼)로 주우십시오.',init(){B.tut.pick=0;dropItem('etherCrystal',P.x+Math.cos(B.camYaw)*140,P.y+Math.sin(B.camYaw)*140);},done:()=>B.tut.pick>0},
   {p:'<b>에토스</b> · 스킬 <b>Q</b> — 이든의 [태초의 공허]는 적을 끌어당겨 삼킵니다.',init(){P.cdQ.eden=0;B.tut.sk=0;ring('dummy',5,150,true);},done:()=>B.tut.sk>0&&alive()===0},
   {p:'<b>에토스</b> · 스킬 <b>E</b> — [센티아 뇌격]은 번개가 적을 연쇄로 꿰뚫고 잠시 멈춰 세웁니다.',init(){P.cdE.eden=0;B.tut.sk=0;ring('dummy',5,160);},done:()=>B.tut.sk>0&&alive()===0},
-  {p:'<b>에토스</b> · <b>X</b>(마우스 휠)로 손의 무기와 등의 무기를 바꿔 쥐고, <b>Z</b>로 등 뒤의 무기를 <b>호출</b>해 공격시키십시오. 무기마다 공격이 다릅니다.',init(){P.cdZ.eden=0;B.tut.sw=0;B.tut.call=0;ring('dummy',5,150);},done:()=>B.tut.sw>0&&B.tut.call>0&&alive()===0},
+  {p:'<b>에토스</b> · <b>X</b>(마우스 휠)로 손의 무기와 등의 무기를 바꿔 쥐고, <b>Z</b>로 등 뒤의 무기를 <b>호출</b>해 공격시키십시오. 무기를 바꾸면 기본 공격과 <b>E 스킬</b>도 바뀝니다.',init(){P.cdZ.eden=0;B.tut.sw=0;B.tut.call=0;ring('dummy',5,150);},done:()=>B.tut.sw>0&&B.tut.call>0&&alive()===0},
   {p:'<b>에토스</b> · <b>교대(Tab)</b>로 네시스와 자리를 바꾸십시오. 교대하는 순간 등장 공격이 나갑니다.',init(){},done:()=>P.active==='nesis'},
   {p:'<b>에토스</b> · 네시스의 <b>Q [흡융]</b>은 사념을 흡수해 회복하고, <b>E [이럽디오 폭염]</b>은 푸른 불꽃 파동을 날립니다.',init(){P.cdQ.nesis=0;P.cdE.nesis=0;B.tut.sk=0;P.hp.nesis=Math.round(CH.nesis.maxhp*.6);ring('dummy',6,130);},done:()=>B.tut.sk>0&&alive()===0},
   {p:'<b>에토스</b> · 게이지가 가득 찼습니다. <b>R을 짧게</b> 누르면 개인 궁극기, <b>R을 0.5초 길게</b> 누르면 [링크 0 : 공허 & 흡융]입니다. 둘 다 발동하십시오.',init(){P.link=100;P.ult.eden=P.ult.nesis=100;B.tut.lk=0;B.tut.ult=0;ring('dummy',7,190);},done:()=>B.tut.lk>0&&B.tut.ult>0&&alive()===0&&!B.bigHalo},
@@ -423,18 +423,31 @@ function doSkillQ(){
     SFX.drain();bark('클라우스룸',pick(['흡융 — 사념을 회수합니다.','적의 힘은 곧 주인의 힘입니다.','정지된 사념을 거두겠습니다.']));
   }
 }
+/* E 스킬: 손에 든 무기에 따라 바뀐다 (대기 시간은 캐릭터 단위로 공유) */
 function doSkillE(){
-  const who=P.active;P.cdE[who]=CH[who].e.cd;if(B.tut)B.tut.sk++;addUlt(4);setPose('cast',.35);
-  if(who==='eden'){
+  const who=P.active,w=heldOf(who);P.cdE[who]=KIT[w].e.cd;if(B.tut)B.tut.sk++;addUlt(4);setPose('cast',.35);
+  if(w==='sentia'){ // 센티아 뇌격: 최대 5체 연쇄 번개 + 경직
     const first=aimFace(320);let src=P;const done=new Set();let n=0;
     if(first){let cur=first;while(cur&&n<5){done.add(cur);FX.bolt(src.x*S,1.3,src.y*S,cur.x*S,1.1,cur.y*S,'#7fdcff',.3);
       hitEnemy(cur,18,{kb:40,ang:angTo(src,cur),col:'#7fdcff'});if(cur.alive)cur.stun=Math.max(cur.stun,cur.d.boss?.35:.9);n++;src=cur;cur=nearestEnemy(src.x,src.y,190,e=>!done.has(e));}}
     else FX.bolt(P.x*S,1.3,P.y*S,(P.x+Math.cos(P.face)*150)*S,.2,(P.y+Math.sin(P.face)*150)*S,'#7fdcff',.3);
     SFX.zap();if(Math.random()<.6)bark('센티아',pick(['뇌격, 연쇄 경로 계산 끝!','움직이지 마. 아니, 못 움직일걸?']));
-  }else{
+  }else if(w==='sensus'){ // 센수스 폭풍 돌진: 앞으로 돌진하며 베고, 끝에 작은 폭풍이 적을 끌어당김
+    aimFace(300);const a=P.face,len=210;
+    lineHit(P.x,P.y,a,len,80,24,{kb:120,col:'#c77dff'});
+    FX.beam([P.x*S,1,P.y*S],[(P.x+Math.cos(a)*len)*S,1,(P.y+Math.sin(a)*len)*S],.25,'#c77dff',.8);
+    P.dvx=Math.cos(a)*len/.18;P.dvy=Math.sin(a)*len/.18;P.dashT=.18;P.dashI=.2;P.perfectUsed=true;setPose('dash',.2);
+    B.fields.push({x:clamp(P.x+Math.cos(a)*len,40,B.w-40),y:clamp(P.y+Math.sin(a)*len,40,B.h-40),r:80,t:0,dur:1.2,tick:0,small:1});
+    SFX.dash();SFX.slashE();if(Math.random()<.6)bark('센수스',pick(['슝— 돌진이다!','회오리 간다아!']));
+  }else if(w==='eruptio'){ // 이럽디오 폭염: 부채꼴 불꽃 파동 3개
     aimFace(300);
     for(const o of [-.28,0,.28]){const a=P.face+o;B.pb.push({x:P.x,y:P.y,vx:Math.cos(a)*560,vy:Math.sin(a)*560,r:28,dmg:16,life:.62,pierce:1,hit:new Set(),col:'#6cb8ff',k:'wave',ang:a});}
     SFX.flame();if(Math.random()<.6)bark('이럽디오',pick(['타올라라!','푸른 불꽃이다, 피할 수 있으면 피해봐라!']));
+  }else{ // 클라우스룸 섬광 연참: 빠른 관통 찌르기 3회
+    aimFace(300);const base=P.face;
+    [-.18,0,.18].forEach((o,i)=>P.pend.push({t:i*.08,fn:()=>{const a=base+o;lineHit(P.x,P.y,a,260,40,16,{kb:60,col:'#f2f6ff'});
+      FX.beam([P.x*S,1.1,P.y*S],[(P.x+Math.cos(a)*260)*S,1.1,(P.y+Math.sin(a)*260)*S],.08,'#ffffff',.95);SFX.slashE();}}));
+    if(Math.random()<.6)bark('클라우스룸',pick(['궤적, 세 번.','정확히 꿰뚫겠습니다.']));
   }
 }
 function doTag(forced){
@@ -697,7 +710,7 @@ function updateProj(dt){
     for(const e of B.en){if(!e.alive||e.spawnT>0)continue;const d=Math.hypot(f.x-e.x,f.y-e.y);if(d<f.r+60&&d>4){const s=(e.d.boss?28:190)*dt;e.x+=(f.x-e.x)/d*Math.min(s,d);e.y+=(f.y-e.y)/d*Math.min(s,d);}}
     if(f.tick<=0){f.tick=.25;for(const e of B.en)if(e.alive&&e.spawnT<=0&&Math.hypot(f.x-e.x,f.y-e.y)<f.r+e.r)hitEnemy(e,8,{col:'#9b6bff'});}
     B.eb=B.eb.filter(b=>Math.hypot(b.x-f.x,b.y-f.y)>f.r);
-    if(f.t>=f.dur){f.dead=1;hitArea(f.x,f.y,f.r+40,34,{kb:200,col:'#c9b6ff',big:1});
+    if(f.t>=f.dur){f.dead=1;hitArea(f.x,f.y,f.r+40,f.small?14:34,{kb:200,col:'#c9b6ff',big:1});
       FX.ring(f.x*S,f.y*S,.3,(f.r+60)*S,'#b49bff',.4);FX.burst(f.x*S,1.1,f.y*S,24,'#c9b6ff',6,.5,.1);B.shake=Math.max(B.shake,.3);SFX.boom();}
   }
   B.fields=B.fields.filter(f=>!f.dead);
@@ -780,7 +793,7 @@ const GRAD={eden:'linear-gradient(90deg,#6b5cff,#b49bff)',nesis:'linear-gradient
 function updateHudStatic(){
   if(!P)return;const a=P.active,o=other();
   U('hpA').querySelector('i').style.background=GRAD[a];U('hpB').querySelector('i').style.background=GRAD[o];
-  U('skQ').textContent=CH[a].q.n;U('skE').textContent=CH[a].e.n;U('tgN').textContent=CH[o].name;
+  U('skQ').textContent=CH[a].q.n;U('skE').textContent=KIT[heldOf(a)].e.n;U('tgN').textContent=CH[o].name;
   U('ulN').textContent='궁극기 · '+CH[a].ult.n;
   U('swN').textContent=WEAPONS[heldOf(a)].name;U('clN').textContent=WEAPONS[backOf(a)].name;
   U('ksXn').textContent=WEAPONS[heldOf(a)].name;U('ksZn').textContent=WEAPONS[backOf(a)].name+' 호출';
@@ -850,7 +863,9 @@ function render3D(rdt){
   if(B.core)B.gen.draw(B.core.x*S,B.core.y*S,t,B.core.hp/B.core.maxhp,B.core.flash>0);
   for(const h of B.haz){const o={r:(h.r||0)*S,r2:(h.r2||0)*S,arc:h.arc,ang:h.ang,len:(h.len||0)*S,w:(h.w||0)*S};
     FX.decal(h.k,h.x*S,h.y*S,o,h.t>0?1-h.t/h.t0:1,'#ff3c5a',h.t<=0);}
-  for(const f of B.fields)FX.voidField(f.x*S,f.y*S,f.r*S,f.t,1);
+  for(const f of B.fields){if(!f.small){FX.voidField(f.x*S,f.y*S,f.r*S,f.t,1);continue;}
+    for(let i=0;i<3;i++)R3.draw(FX.m.torus,mat(f.x*S,.4+i*.5,f.y*S,f.t*(5+i*2),f.r*S*(1-i*.2),1,f.r*S*(1-i*.2)),{mode:2,tint:i===1?'#7a3fc0':'#c77dff',a:.7});
+    FX.trail(f.x*S,.6,f.y*S,'#e0c8ff',.08);}
   for(const it of B.items)drawItem(it,it.x*S,it.y*S,t,it.life<5);
   // 아군
   for(const a of B.allies){const mv=Math.min(1,Math.hypot(a.x-a.px,a.y-a.py)*60/165);
@@ -958,7 +973,7 @@ function updatePcHud(){
     const w=(P.hp[k]/CH[k].maxhp*100)|0,bar=UIC['ptb_'+k]||(UIC['ptb_'+k]=el.querySelector('i'));if(bar._w!==w){bar._w=w;bar.style.width=w+'%';}
   }
   const a=P.active,lk=Math.floor(P.link);
-  setT(U('ksQn'),CH[a].q.full);setT(U('ksEn'),CH[a].e.full);
+  setT(U('ksQn'),CH[a].q.full);setT(U('ksEn'),KIT[heldOf(a)].e.full);
   cdShow('ksQc',P.cdQ[a]);cdShow('ksEc',P.cdE[a]);cdShow('ksZc',P.cdZ[a]);
   const ul=Math.floor(P.ult[a]);setC(U('ksR'),'full',ul>=100);setC(U('ksR'),'lfull',lk>=100);if(U('ksRg')._p!==ul){U('ksRg')._p=ul;U('ksRg').style.setProperty('--p',ul+'%');}
   setT(U('ksRp'),ul+'%');setT(U('ksRn'),CH[a].ult.n);setT(U('ksL'),'길게: 링크 0 '+lk+'%');setT(U('ksH'),P.hz>8?'공중':'');
