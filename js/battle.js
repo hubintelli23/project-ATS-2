@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.3.0
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.4.0
    js/battle.js — 전투 (3인칭 백뷰)
 
    게임 판정은 평면 좌표(px)로 계산하고, 그릴 때 S(=1/30)를 곱해 미터로 바꾼다.
@@ -61,7 +61,7 @@ function startBattle(id){
   if(id==='tut')tutInit();
   if(def.waves)nextWave();
   hideDialog();['card','title','chap','fin','result','over','pause'].forEach(i=>show(i,false));GS.map=false;show('map',false);
-  GS.mode='battle';GS.paused=false;
+  GS.mode='battle';GS.paused=false;masterRefresh();
   show('hud',true);show('ctrl',true);show('pauseB',true);
   $('banner').classList.remove('on');$('barks').innerHTML='';
   if(id==='abimor')setTimeout(()=>B&&bark('이든','...온다! 전원, 전투 배치!'),400);
@@ -188,6 +188,8 @@ function updatePlayer(dt){
   P.x=clamp(P.x,24,B.w-24);P.y=clamp(P.y,24,B.h-24);
   if(P.dashT<=0)for(const e of B.en){if(!e.alive||e.spawnT>0)continue;const d=dist(P,e),m=P.r+e.r;if(d<m&&d>0){const k=(m-d)/d;P.x+=(P.x-e.x)*k*.5;P.y+=(P.y-e.y)*k*.5;}}
   if(B.core){const d=dist(P,B.core),m=P.r+B.core.r;if(d<m&&d>0){const k=(m-d)/d;P.x+=(P.x-B.core.x)*k;P.y+=(P.y-B.core.y)*k;}}
+  if(M('nocd')){P.cdQ.eden=P.cdQ.nesis=P.cdE.eden=P.cdE.nesis=0;P.tagCd=Math.min(P.tagCd,0);P.dashCd=Math.min(P.dashCd,0);}
+  if(M('link'))P.link=100;
   P.atkT-=dt;P.comboWin-=dt;P.dashI-=dt;P.dashCd-=dt;P.iT-=dt;P.tagCd-=dt;P.atkBuf-=dt;P.poseT+=dt;
   for(const k of ['eden','nesis']){P.cdQ[k]-=dt;P.cdE[k]-=dt;}
   if(P.pose&&P.poseT>=P.poseD)P.pose=null;
@@ -363,6 +365,7 @@ function hurtPlayer(dmg){
   if(B.over||B.winT>=0)return;
   if(P.dashI>0){if(!P.perfectUsed){P.perfectUsed=true;perfectDodge();}return;}
   if(P.iT>0||B.linkInv>0||B.cine)return;
+  if(M('god')){ftxt(P.x,P.y,'0','#ffd27a',0,2.2);return;}
   dmg=Math.round(dmg*rand(.92,1.08));P.hp[P.active]-=dmg;P.iT=0.45;B.stats.taken+=dmg;
   ftxt(P.x,P.y,'-'+dmg,'#ff6b8a',0,2.2);B.shake=Math.max(B.shake,.25);SFX.hurt();addLink(3);
   if(P.atkT<=0)setPose('hurt',.2);
@@ -375,12 +378,12 @@ function perfectDodge(){
   if(B.tut&&B.tut.i===2)B.tut.dodges++;
   if(Math.random()<.4)bark('센티아',pick(['좋아, 그 타이밍이야!','흥, 그 정도는 해야지.','5번 루트, 정확해!']));
 }
-function hurtAlly(a,dmg){a.hp-=dmg;ftxt(a.x,a.y,'-'+Math.round(dmg),'#ffb0a0',0,2.2);if(a.hp<=0){a.hp=0;a.down=7;bark(a.name,'크윽... 잠시만 버텨주십시오!');}}
-function hurtCore(dmg){if(!B.core)return;B.core.hp-=dmg;B.core.flash=.15;if(B.core.hp<=0){B.core.hp=0;lose('방어막 발생기가 파괴되었습니다.');}}
+function hurtAlly(a,dmg){if(M('god'))return;a.hp-=dmg;ftxt(a.x,a.y,'-'+Math.round(dmg),'#ffb0a0',0,2.2);if(a.hp<=0){a.hp=0;a.down=7;bark(a.name,'크윽... 잠시만 버텨주십시오!');}}
+function hurtCore(dmg){if(!B.core||M('god'))return;B.core.hp-=dmg;B.core.flash=.15;if(B.core.hp<=0){B.core.hp=0;lose('방어막 발생기가 파괴되었습니다.');}}
 function hitEnemy(e,dmg,o){
   if(!e.alive||e.inv)return;o=o||{};
   const crit=!o.ally&&Math.random()<.12;
-  let d=Math.max(1,Math.round(dmg*(crit?1.6:1)*(e.d.armor||1)*rand(.92,1.08)));
+  let d=Math.max(1,Math.round(dmg*(M('dmg')&&!o.ally?10:1)*(crit?1.6:1)*(e.d.armor||1)*rand(.92,1.08)));
   e.hp-=d;e.flash=.1;
   if(o.kb){const k=e.d.heavy?.08:1;e.kx+=Math.cos(o.ang)*o.kb*k;e.ky+=Math.sin(o.ang)*o.kb*k;}
   ftxt(e.x,e.y,(crit?'✦':'')+d,crit?'#ffe08a':(o.ally?'#ffc2b3':'#ffffff'),crit||o.big,e.d.hgt*.8);
@@ -593,9 +596,9 @@ function battleUpdate(rdt){
 }
 function healAll(f){for(const k of ['eden','nesis'])if(P.hp[k]>0)P.hp[k]=Math.min(CH[k].maxhp,P.hp[k]+CH[k].maxhp*f);}
 function win(){if(B.winT>=0||B.over)return;B.winT=1.6;B.haz=[];B.eb=[];SFX.win();$('banner').classList.remove('on');}
-function lose(msg){if(B.over)return;B.over=true;SFX.lose();setTimeout(()=>{if(!B)return;releaseLock();toggleMap(false);$('interact').classList.add('hide');$('oMsg').textContent=msg||'두 사람 모두 쓰러졌습니다.';show('over',true);GS.mode='over';},900);}
+function lose(msg){if(B.over)return;B.over=true;show('bWin',false);SFX.lose();setTimeout(()=>{if(!B)return;releaseLock();toggleMap(false);$('interact').classList.add('hide');$('oMsg').textContent=msg||'두 사람 모두 쓰러졌습니다.';show('over',true);GS.mode='over';},900);}
 function showResult(){
-  GS.mode='result';releaseLock();toggleMap(false);$('interact').classList.add('hide');
+  GS.mode='result';show('bWin',false);releaseLock();toggleMap(false);$('interact').classList.add('hide');
   const s=B.stats,t=s.time;
   const score=100-s.taken/12+s.maxCombo/3+s.perfect*2-Math.max(0,t-(B.id==='tut'||B.id==='outpost'?150:120))/3;
   $('rRank').textContent=score>=95?'S':score>=75?'A':score>=55?'B':'C';
@@ -616,6 +619,16 @@ $('pauseB').onclick=()=>{audioInit();togglePause();};
 $('pRes').onclick=()=>togglePause(false);
 $('pRetry').onclick=()=>{togglePause(false);startBattle(B.id);};
 $('pTitle').onclick=()=>{togglePause(false);toTitle();};
+$('pMaster').onclick=()=>{SFX.ui();openMaster();};
+/* 마스터 모드: 전투 즉시 승리 */
+function battleSkip(){
+  if(!B||B.over||B.winT>=0)return;
+  if(B.tut){B.tut.i=TUT.length;$('banner').classList.remove('on');}
+  B.spawnQ=[];if(B.def.waves)B.wave=B.def.waves.length-1;
+  for(const e of B.en)if(e.alive){e.alive=false;e.hp=0;}
+  win();
+}
+$('bWin').addEventListener('click',e=>{e.stopPropagation();SFX.ui();battleSkip();});
 $('pSnd').onclick=()=>{SAVE.snd=!SAVE.snd;persist();$('pSnd').textContent='효과음: '+(SAVE.snd?'켜짐':'꺼짐');};
 $('pUI').onclick=()=>{const o=['auto','pc','touch'];SAVE.ui=o[(o.indexOf(SAVE.ui)+1)%3];persist();applyUISetting();$('pUI').textContent='조작 UI: '+UI_N[SAVE.ui];};
 $('pSens').onclick=()=>{SAVE.sens=(SAVE.sens+1)%3;persist();$('pSens').textContent='카메라 감도: '+SENS_N[SAVE.sens];};

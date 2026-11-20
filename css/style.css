@@ -1,4 +1,4 @@
-/* 액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.3.0  · css/style.css */
+/* 액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.4.0  · css/style.css */
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 html,body{margin:0;height:100%;background:#07060d;overflow:hidden;color:#e9e6f5;
@@ -149,7 +149,7 @@ body:not(.touch) #ctrl{display:none!important}
 
 #nogl{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;background:#07060d;color:#e9e6f5;font-size:15px;line-height:1.7;z-index:9}
 
-/* ================= v0.3.0 — PC / 모바일 겸용 ================= */
+/* ================= v0.4.0 — PC / 모바일 겸용 ================= */
 .key{display:inline-block;min-width:18px;padding:1px 6px;margin:0 2px;border:1px solid rgba(200,185,255,.55);border-radius:5px;background:rgba(20,14,40,.85);font-size:11px;font-weight:800;color:#efeaff;text-align:center;line-height:16px}
 body.touch .pconly{display:none!important}
 #mini{position:absolute;inset:auto;border-radius:10px;border:1px solid rgba(160,140,255,.4)}
@@ -187,3 +187,20 @@ body.pc #combo{top:30%}
 .ks.big.full{border-color:#ffe08a;box-shadow:0 0 22px rgba(255,210,120,.8);animation:lkp .5s infinite alternate}
 #pchint{position:absolute;right:max(20px,env(safe-area-inset-right));bottom:124px;text-align:right;font-size:11.5px;color:#cfc6ee;line-height:2;text-shadow:0 0 6px #000}
 #pchint b{color:#9fe2ff}
+
+/* ================= v0.4.0 — 마스터 모드 ================= */
+.btn.master{border-color:rgba(255,200,120,.55);color:#ffe2b0}
+#master{z-index:6;gap:10px;background:rgba(4,3,10,.95)}
+#master .mgrid{display:grid;grid-template-columns:repeat(2,minmax(150px,240px));gap:8px}
+#master .mrow{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:560px}
+.tg{pointer-events:auto;cursor:pointer;border:1px solid rgba(160,140,255,.35);background:rgba(14,10,30,.85);border-radius:10px;padding:9px 12px;font-size:13px;text-align:left;color:#cfc6ee;font-family:inherit}
+.tg.on{border-color:#ffd27a;color:#fff3d6;background:rgba(70,48,14,.75)}
+.tg.on::before{content:'✓ ';color:#ffd27a}
+#master.off .mgrid,#master.off .mrow{opacity:.45}
+#mBadge{position:absolute;left:50%;transform:translateX(-50%);bottom:max(6px,env(safe-area-inset-bottom));font-size:10px;font-weight:900;letter-spacing:.3em;color:#ffd27a;background:rgba(40,26,6,.75);border:1px solid rgba(255,210,122,.6);border-radius:6px;padding:2px 8px;pointer-events:none}
+body.pc #mBadge{bottom:auto;top:160px;left:max(12px,env(safe-area-inset-left));transform:none}
+.sbtn.mst{border-color:rgba(255,200,120,.6);color:#ffe2b0;background:rgba(50,32,8,.8)}
+#bWin{position:absolute;right:calc(max(10px,env(safe-area-inset-right)) + 48px);top:calc(max(8px,env(safe-area-inset-top)) + 4px);z-index:2}
+body.pc #bWin{top:calc(max(8px,env(safe-area-inset-top)) + 34px)}
+body.touch #bWin{top:calc(max(8px,env(safe-area-inset-top)) + 128px)}
+@media (max-aspect-ratio:1/1){#master .mgrid{grid-template-columns:1fr}}

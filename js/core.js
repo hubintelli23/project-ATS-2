@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.3.0
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.4.0
    js/core.js — 화면 크기, 저장, 효과음, 입력(통일 조작 체계)
 
    통일 조작 체계 (PC)
@@ -10,7 +10,7 @@
    UI 모드: SAVE.ui = 'auto'(마지막 입력 기준 자동) | 'pc' | 'touch'
    ================================================================== */
 'use strict';
-const VERSION='v0.3.0';
+const VERSION='v0.4.0';
 const $=id=>document.getElementById(id);
 const PI=Math.PI,TAU=PI*2;
 const rand=(a,b)=>a+Math.random()*(b-a);
@@ -31,8 +31,12 @@ function resize(){
 }
 
 /* ---------------- 저장 ---------------- */
-const SAVE={unlocked:0,snd:true,sens:1,ui:'auto'};
+const SAVE={unlocked:0,snd:true,sens:1,ui:'auto',master:null};
 try{const s=JSON.parse(localStorage.getItem('as0s2_save')||'{}');Object.assign(SAVE,s);}catch(e){}
+/* 마스터 모드 (테스트·감상용): on 이 켜져 있을 때만 각 항목이 적용된다 */
+SAVE.master=Object.assign({on:false,skip:true,nocd:true,god:false,link:false,dmg:false,unlock:true},SAVE.master||{});
+const MASTER_OPTS=[['skip','스토리·전투 건너뛰기 버튼'],['nocd','쿨타임 제거 (스킬·교대·회피·대쉬)'],['god','무적 (방어막 발생기 포함)'],['link','링크 게이지 무한'],['dmg','공격력 10배'],['unlock','모든 막 열기']];
+function M(k){return SAVE.master.on&&!!SAVE.master[k];}
 function persist(){try{localStorage.setItem('as0s2_save',JSON.stringify(SAVE));}catch(e){}}
 
 /* ---------------- 효과음 (파일 없이 합성) ---------------- */

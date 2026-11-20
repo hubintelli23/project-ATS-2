@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.3.0
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.4.0
    js/story.js — 등장인물, 대본, 대화 진행, 대화 장면(3D 무대)
 
    대본(RAW) 줄 형식
@@ -252,7 +252,7 @@ function showCard(st){
 }
 function showLine(st){
   GS.mode='dialog';D.step=st;
-  show('dlg',true);show('dlgbar',true);
+  show('dlg',true);show('dlgbar',true);masterRefresh();
   const dl=$('dlg');dl.classList.toggle('nar',st.t==='nar');dl.classList.toggle('sys',st.t==='sys');
   const por=$('dPor');por.innerHTML='';
   if(st.t==='say'){
@@ -266,6 +266,38 @@ function showLine(st){
   STAGE.speaker=st.t==='say'?(SPK[st.n]&&SPK[st.n].av)||null:null;
 }
 function hideDialog(){show('dlg',false);show('dlgbar',false);}
+/* ---------------- 마스터 모드 ---------------- */
+function chapterSkip(){ // 남은 막 전체(전투 포함) 건너뛰기
+  if(run.ch+1>SAVE.unlocked){SAVE.unlocked=run.ch+1;persist();}
+  hideDialog();if(SCRIPT[run.ch+1])startChapter(run.ch+1);else finish();
+}
+function jumpToBattle(id){ // 대본에서 그 전투 위치를 찾아 바로 시작
+  for(const ch in SCRIPT){const L=SCRIPT[ch];const i=L.findIndex(s=>s.t==='battle'&&s.id===id);if(i<0)continue;
+    run.ch=+ch;run.i=i+1;for(let k=i;k>=0;k--)if(L[k].t==='bg'){GS.bg=L[k].bg;break;}
+    ['title','chap','fin','master','pause','result','over'].forEach(x=>show(x,false));GS.paused=false;
+    startBattle(id);return;}
+}
+const BATTLE_NAMES={tut:'1막 · 에테르 챔버 튜토리얼',outpost:'2막 · 제1 전초기지 방어전',abimor:'2막 · 아비 & 모르',phasis:'2막 · 파시스'};
+function masterUI(){
+  const m=SAVE.master;$('mOn').textContent='마스터 모드: '+(m.on?'켜짐':'꺼짐');$('mOn').classList.toggle('gold',m.on);
+  $('master').classList.toggle('off',!m.on);
+  const O=$('mOpts');O.innerHTML='';
+  for(const [k,label] of MASTER_OPTS){const b=document.createElement('button');b.className='tg'+(m[k]?' on':'');b.textContent=label;
+    b.onclick=()=>{m[k]=!m[k];persist();SFX.ui();masterUI();};O.appendChild(b);}
+  const J=$('mJump');J.innerHTML='';
+  for(const id in BATTLE_NAMES){const b=document.createElement('button');b.className='sbtn';b.textContent=BATTLE_NAMES[id];b.disabled=!m.on;
+    b.onclick=()=>{SFX.ui();jumpToBattle(id);};J.appendChild(b);}
+  masterRefresh();
+}
+function masterRefresh(){ // 버튼·배지 표시 갱신
+  show('bChapSkip',M('skip'));show('bWin',M('skip')&&GS.mode==='battle');
+  show('mBadge',SAVE.master.on&&GS.mode!=='title');
+}
+function openMaster(){masterUI();show('master',true);}
+$('mOn').onclick=()=>{SAVE.master.on=!SAVE.master.on;persist();SFX.ui();masterUI();};
+$('mClose').onclick=()=>{SFX.ui();show('master',false);masterRefresh();if(!$('chap').classList.contains('hide'))buildChap();};
+$('mMaster').onclick=()=>{audioInit();SFX.ui();openMaster();};
+$('bChapSkip').addEventListener('click',e=>{e.stopPropagation();SFX.ui();chapterSkip();});
 function dlgAdvance(){
   if(GS.mode!=='dialog')return;
   if(D.typing){D.shown=D.full.length;D.typing=false;$('dTx').textContent=D.full;return;}
@@ -303,12 +335,12 @@ $('fTitle').onclick=()=>toTitle();
 function buildChap(){
   const L=$('chapList');L.innerHTML='';
   CHAPTERS.forEach((c,i)=>{const b=document.createElement('button');b.className='btn';
-    const lock=i>SAVE.unlocked;b.disabled=lock;
+    const lock=i>SAVE.unlocked&&!M('unlock');b.disabled=lock;
     b.innerHTML=`<span>${c.n} — ${c.t}</span><small>${lock?'🔒 이전 막을 끝내면 열려요':c.d}</small>`;
     b.onclick=()=>{SFX.ui();startChapter(i);};L.appendChild(b);});
 }
 function toTitle(){
-  ['fin','pause','over','result','hud','ctrl','pauseB','chap','card','map','interact'].forEach(i=>show(i,false));GS.map=false;hideDialog();releaseLock();
+  ['fin','pause','over','result','hud','ctrl','pauseB','chap','card','map','interact','master','bWin','mBadge'].forEach(i=>show(i,false));GS.map=false;hideDialog();releaseLock();
   B=null;GS.mode='title';GS.bg='title';GS.paused=false;show('title',true);FX.clear();
 }
 
