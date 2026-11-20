@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.5.0
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.6.0
    js/battle.js — 전투 (3인칭 백뷰)
 
    게임 판정은 평면 좌표(px)로 계산하고, 그릴 때 S(=1/30)를 곱해 미터로 바꾼다.
@@ -28,6 +28,10 @@ const KIT={
   klausroom:{col:'#f2f6ff',combo:[{d:.2,r:92,a:1.7,dmg:11},{d:.2,r:92,a:1.7,dmg:11},{d:.32,r:100,a:1.2,dmg:16,fin:'pierce'}],
     call:{n:'백야 일섬',cd:12,bark:['클라우스룸','정지된 궤적을 베겠습니다.']}},
 };
+/* E 스킬: 손에 든 무기에 따라 바뀐다 (센티아·이럽디오는 기존 스킬, 센수스·클라우스룸은 임시 설계) */
+const ESK={sentia:{n:'뇌격',full:'센티아 뇌격',cd:7},sensus:{n:'폭풍',full:'센수스 폭풍',cd:7},
+  eruptio:{n:'폭염',full:'이럽디오 폭염',cd:7},klausroom:{n:'정지',full:'클라우스룸 정지',cd:7}};
+const eskOf=k=>ESK[P.held[k]];
 const heldOf=k=>P.held[k],backOf=k=>CH[k].weapons.find(w=>w!==P.held[k]);
 const ET={
   dummy:{name:'훈련용 홀로그램',hp:30,r:16,spd:0,ai:'dummy',dmg:0,col:'#58d6ff',holo:1,hgt:2},
@@ -123,7 +127,7 @@ const TUT=[
   {p:'<b>에토스</b> · <b>Space</b>로 점프합니다. 공중에서 <b>좌클릭</b>은 점프 공격, <b>Ctrl+좌클릭</b>은 내리꽂는 점프 강공격입니다. (휴대폰: 점프 후 공격 / 길게 누르기)',init(){B.tut.ja=0;ring('dummy',4,120);},done:()=>B.tut.ja>0&&alive()===0},
   {p:'<b>에토스</b> · 쓰러진 적은 아이템을 떨어뜨립니다. 가까이 가서 <b>F</b>(휴대폰: 줍기 버튼)로 주우십시오.',init(){B.tut.pick=0;dropItem('etherCrystal',P.x+Math.cos(B.camYaw)*140,P.y+Math.sin(B.camYaw)*140);},done:()=>B.tut.pick>0},
   {p:'<b>에토스</b> · 스킬 <b>Q</b> — 이든의 [태초의 공허]는 적을 끌어당겨 삼킵니다.',init(){P.cdQ.eden=0;B.tut.sk=0;ring('dummy',5,150,true);},done:()=>B.tut.sk>0&&alive()===0},
-  {p:'<b>에토스</b> · 스킬 <b>E</b> — [센티아 뇌격]은 번개가 적을 연쇄로 꿰뚫고 잠시 멈춰 세웁니다.',init(){P.cdE.eden=0;B.tut.sk=0;ring('dummy',5,160);},done:()=>B.tut.sk>0&&alive()===0},
+  {p:'<b>에토스</b> · 스킬 <b>E</b> — 손에 든 무기의 스킬이 나갑니다. [센티아 뇌격]은 번개가 적을 연쇄로 꿰뚫고 잠시 멈춰 세웁니다.',init(){P.cdE.eden=0;B.tut.sk=0;ring('dummy',5,160);},done:()=>B.tut.sk>0&&alive()===0},
   {p:'<b>에토스</b> · <b>X</b>(마우스 휠)로 손의 무기와 등의 무기를 바꿔 쥐고, <b>Z</b>로 등 뒤의 무기를 <b>호출</b>해 공격시키십시오. 무기마다 공격이 다릅니다.',init(){P.cdZ.eden=0;B.tut.sw=0;B.tut.call=0;ring('dummy',5,150);},done:()=>B.tut.sw>0&&B.tut.call>0&&alive()===0},
   {p:'<b>에토스</b> · <b>교대(Tab)</b>로 네시스와 자리를 바꾸십시오. 교대하는 순간 등장 공격이 나갑니다.',init(){},done:()=>P.active==='nesis'},
   {p:'<b>에토스</b> · 네시스의 <b>Q [흡융]</b>은 사념을 흡수해 회복하고, <b>E [이럽디오 폭염]</b>은 푸른 불꽃 파동을 날립니다.',init(){P.cdQ.nesis=0;P.cdE.nesis=0;B.tut.sk=0;P.hp.nesis=Math.round(CH.nesis.maxhp*.6);ring('dummy',6,130);},done:()=>B.tut.sk>0&&alive()===0},
@@ -291,7 +295,7 @@ function doCall(){
   if(!B.egoRig[id]){B.egoRig[id]=makeAvatar('ego_'+id);B.egoW[id]=WEAPONS[id].build();}
   bark(K.call.bark[0],K.call.bark[1]);SFX.tag();if(B.tut)B.tut.call++;
 }
-function egoFire(eg){
+function egoFire(eg){domPulse();
   const K=KIT[eg.id],c=K.col,x=eg.x,y=eg.y;let a=eg.tg&&eg.tg.alive?angTo(eg,eg.tg):eg.ang;eg.ang=a;
   if(eg.id==='sentia'){lineHit(x,y,a,400,70,38,{kb:120,col:c});for(const e of B.en)if(e.alive&&!e.d.boss&&lineHitTest(e,x,y,a,400,70))e.stun=Math.max(e.stun,.6);
     FX.bolt(x*S,1.2,y*S,(x+Math.cos(a)*400)*S,1.1,(y+Math.sin(a)*400)*S,'#bff0ff',.3);eg.dash={x0:x,y0:y,x1:clamp(x+Math.cos(a)*400,30,B.w-30),y1:clamp(y+Math.sin(a)*400,30,B.h-30)};SFX.zap();}
@@ -336,6 +340,7 @@ function drawEgos(t){
   }
 }
 function doHeavy(){
+  domPulse();
   aimFace(260);SFX.heavy();
   if(P.active==='eden'){
     P.atkT=.55;setPose('heavy',.55);
@@ -399,7 +404,7 @@ function doDash(){
   SFX.dash();FX.ring(P.x*S,P.y*S,.2,1.2,CH[P.active].col,.25);
 }
 function doSkillQ(){
-  const who=P.active;P.cdQ[who]=CH[who].q.cd;if(B.tut)B.tut.sk++;setPose('cast',.4);
+  const who=P.active;P.cdQ[who]=CH[who].q.cd;if(B.tut)B.tut.sk++;setPose('cast',.4);domOpen(who);domPulse();
   if(who==='eden'){
     const tg=aimFace(300);
     const x=tg?tg.x:P.x+Math.cos(P.face)*130,y=tg?tg.y:P.y+Math.sin(P.face)*130;
@@ -418,18 +423,28 @@ function doSkillQ(){
     SFX.drain();bark('클라우스룸',pick(['흡융 — 사념을 회수합니다.','적의 힘은 곧 주인의 힘입니다.','정지된 사념을 거두겠습니다.']));
   }
 }
-function doSkillE(){
-  const who=P.active;P.cdE[who]=CH[who].e.cd;if(B.tut)B.tut.sk++;setPose('cast',.35);
-  if(who==='eden'){
+function doSkillE(){domPulse();
+  const who=P.active,hw=heldOf(who);P.cdE[who]=eskOf(who).cd;if(B.tut)B.tut.sk++;setPose('cast',.35);
+  if(hw==='sentia'){
     const first=aimFace(320);let src=P;const done=new Set();let n=0;
     if(first){let cur=first;while(cur&&n<5){done.add(cur);FX.bolt(src.x*S,1.3,src.y*S,cur.x*S,1.1,cur.y*S,'#7fdcff',.3);
       hitEnemy(cur,18,{kb:40,ang:angTo(src,cur),col:'#7fdcff'});if(cur.alive)cur.stun=Math.max(cur.stun,cur.d.boss?.35:.9);n++;src=cur;cur=nearestEnemy(src.x,src.y,190,e=>!done.has(e));}}
     else FX.bolt(P.x*S,1.3,P.y*S,(P.x+Math.cos(P.face)*150)*S,.2,(P.y+Math.sin(P.face)*150)*S,'#7fdcff',.3);
     SFX.zap();if(Math.random()<.6)bark('센티아',pick(['뇌격, 연쇄 경로 계산 끝!','움직이지 마. 아니, 못 움직일걸?']));
-  }else{
+  }else if(hw==='sensus'){ // 임시: 사방으로 보랏빛 폭풍 파동
+    aimFace(300);const c=KIT.sensus.col;
+    for(let i=0;i<6;i++){const a=P.face+i*TAU/6;B.pb.push({x:P.x,y:P.y,vx:Math.cos(a)*480,vy:Math.sin(a)*480,r:26,dmg:14,life:.55,pierce:1,hit:new Set(),col:c,k:'wave',ang:a,purple:true});}
+    FX.ring(P.x*S,P.y*S,.2,150*S,c,.4);FX.burst(P.x*S,1,P.y*S,22,c,5,.5,.1);SFX.slashE();
+    if(Math.random()<.6)bark('센수스',pick(['다 날아가라~!','폭풍이다아!']));
+  }else if(hw==='eruptio'){
     aimFace(300);
     for(const o of [-.28,0,.28]){const a=P.face+o;B.pb.push({x:P.x,y:P.y,vx:Math.cos(a)*560,vy:Math.sin(a)*560,r:28,dmg:16,life:.62,pierce:1,hit:new Set(),col:'#6cb8ff',k:'wave',ang:a});}
     SFX.flame();if(Math.random()<.6)bark('이럽디오',pick(['타올라라!','푸른 불꽃이다, 피할 수 있으면 피해봐라!']));
+  }else{ // 클라우스룸 — 임시: 주변 적을 정지시킨다
+    const c=KIT.klausroom.col;let n=0;
+    for(const e of B.en){if(!e.alive||e.spawnT>0)continue;if(dist(P,e)<=210+e.r){hitEnemy(e,10,{kb:0,ang:angTo(P,e),col:c});if(e.alive)e.stun=Math.max(e.stun,e.d.boss?.5:1.4);n++;}}
+    FX.ring(P.x*S,P.y*S,.2,210*S,c,.5);FX.pillar(P.x*S,P.y*S,.5,3,c,.4);SFX.perfect();
+    if(Math.random()<.6)bark('클라우스룸',pick(['궤적을 정지시킵니다.','움직임을 멈추겠습니다.']));
   }
 }
 function doTag(forced){
@@ -443,13 +458,13 @@ function doTag(forced){
 }
 function addLink(v){P.link=Math.min(100,P.link+v);}
 function doLink(){
-  P.link=0;if(B.tut)B.tut.lk++;
+  domOpen('res');P.link=0;if(B.tut)B.tut.lk++;
   B.cine={t:0,dur:1.6,x:P.x,y:P.y,yaw:B.camYaw};
   SFX.link();flash('#c9b6ff',.35);
   B.haz=B.haz.filter(h=>h.fired);B.eb=[];B.stats.links=(B.stats.links||0)+1;
 }
 function linkImpact(){
-  const x=P.x,y=P.y;
+  domPulse();const x=P.x,y=P.y;
   for(const e of B.en)if(e.alive&&e.spawnT<=0&&Math.hypot(e.x-x,e.y-y)<=360+e.r)hitEnemy(e,e.d.boss?190:240,{kb:300,ang:Math.atan2(e.y-y,e.x-x),col:'#ffe6a0',nolink:true,big:true});
   FX.ring(x*S,y*S,1,380*S,'#c9b6ff',.7);FX.ring(x*S,y*S,.5,340*S,'#9fe2ff',.9);FX.pillar(x*S,y*S,2.4,20,'#c9b6ff',.8);
   FX.burst(x*S,1,y*S,60,'#c9b6ff',12,.9,.12);FX.burst(x*S,1,y*S,40,'#bfeaff',10,.9,.1);
@@ -678,7 +693,7 @@ function battleUpdate(rdt){
   updatePlayer(dt);clearPresses();
   updateAllies(dt);updateEnemies(dt);updateHaz(dt);updateProj(dt);
   for(const g of B.ghosts)g.life-=dt;B.ghosts=B.ghosts.filter(g=>g.life>0);
-  updateItems(dt);updateEgos(dt);
+  updateItems(dt);updateEgos(dt);domUpdate(dt);
   FX.update(dt);
   if(B.core&&B.core.flash>0)B.core.flash-=dt;
   if(B.over||B.winT>=0)return;
@@ -741,7 +756,7 @@ const GRAD={eden:'linear-gradient(90deg,#6b5cff,#b49bff)',nesis:'linear-gradient
 function updateHudStatic(){
   if(!P)return;const a=P.active,o=other();
   U('hpA').querySelector('i').style.background=GRAD[a];U('hpB').querySelector('i').style.background=GRAD[o];
-  U('skQ').textContent=CH[a].q.n;U('skE').textContent=CH[a].e.n;U('tgN').textContent=CH[o].name;
+  U('skQ').textContent=CH[a].q.n;U('skE').textContent=eskOf(a).n;U('tgN').textContent=CH[o].name;
   U('swN').textContent=WEAPONS[heldOf(a)].name;U('clN').textContent=WEAPONS[backOf(a)].name;
   U('ksXn').textContent=WEAPONS[heldOf(a)].name;U('ksZn').textContent=WEAPONS[backOf(a)].name+' 호출';
   U('pnA').innerHTML=`<b style="color:${CH[a].col}">${CH[a].title} ${CH[a].name}</b><span></span>`;
@@ -802,9 +817,10 @@ function render3D(rdt){
   if(!B.cp||B.cine)B.cp={p:cp,t:tg};else{const k=Math.min(1,rdt*12);for(let i=0;i<3;i++){B.cp.p[i]=lerp(B.cp.p[i],cp[i],k);B.cp.t[i]=lerp(B.cp.t[i],tg[i],k);}}
   const sh=B.shake;const j=()=>(Math.random()-.5)*sh;
   R3.cam.pos=[B.cp.p[0]+j(),B.cp.p[1]+j(),B.cp.p[2]+j()];R3.cam.tgt=[B.cp.t[0],B.cp.t[1],B.cp.t[2]];R3.cam.fov=B.cine?.8:1.0;
-  R3.begin(B.cfg);
-  drawSky(B.def.arena,B.cfg);
+  domApplyLooks();R3.begin(domCfg(B.cfg));
+  domSky();
   B.env.draw(t);
+  domDraw(t,rdt);
   if(B.core)B.gen.draw(B.core.x*S,B.core.y*S,t,B.core.hp/B.core.maxhp,B.core.flash>0);
   for(const h of B.haz){const o={r:(h.r||0)*S,r2:(h.r2||0)*S,arc:h.arc,ang:h.ang,len:(h.len||0)*S,w:(h.w||0)*S};
     FX.decal(h.k,h.x*S,h.y*S,o,h.t>0?1-h.t/h.t0:1,'#ff3c5a',h.t<=0);}
@@ -904,7 +920,7 @@ function updatePcHud(){
     const w=(P.hp[k]/CH[k].maxhp*100)|0,bar=UIC['ptb_'+k]||(UIC['ptb_'+k]=el.querySelector('i'));if(bar._w!==w){bar._w=w;bar.style.width=w+'%';}
   }
   const a=P.active,lk=Math.floor(P.link);
-  setT(U('ksQn'),CH[a].q.full);setT(U('ksEn'),CH[a].e.full);
+  setT(U('ksQn'),CH[a].q.full);setT(U('ksEn'),eskOf(a).full);
   cdShow('ksQc',P.cdQ[a]);cdShow('ksEc',P.cdE[a]);cdShow('ksZc',P.cdZ[a]);
   setC(U('ksR'),'full',lk>=100);if(U('ksRg')._p!==lk){U('ksRg')._p=lk;U('ksRg').style.setProperty('--p',lk+'%');}
   setT(U('ksRp'),lk+'%');setT(U('ksH'),P.hz>8?'공중':'');
