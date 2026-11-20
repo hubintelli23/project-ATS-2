@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.4.0
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.5.0
    assets/avatars.js — 아바타 캐릭터 (주인공 · 아군 · 적 · 보스)
 
    새 캐릭터 추가 방법
@@ -36,22 +36,22 @@ function humanoid(o){
     if(o.collar)g.add(GEO.cyl(.1,.13,.1,10,o.collar).tr(0,.56,0));if(o.plates)g.add(GEO.box(.2,.12,.26,o.plates).tr(.28*bw,.52,0),GEO.box(.2,.12,.26,o.plates).tr(-.28*bw,.52,0),GEO.box(.3*bw,.26,.05,o.plates).tr(0,.3,.13*bw));return g;})),[0,.06,0]);
   if(o.neon)addTo(R.torso,Node(m('neon',()=>GEO.merge(GEO.box(.016,.42,.01,'#fff').tr(.065,.27,.122*bw),GEO.box(.016,.42,.01,'#fff').tr(-.065,.27,.122*bw),GEO.box(.3*bw,.014,.01,'#fff').tr(0,.47,.125*bw))),{mode:1,tint:hex(o.neon).slice()}));
   if(o.core)addTo(R.torso,Node(m('core',()=>GEO.sph(.07,10,'#fff').tr(0,.32,.16*bw)),{mode:1,tint:hex(o.core).slice(),name:'core'}));
-  R.head=addTo(R.torso,Node(m('neck',()=>GEO.cyl(.05,.055,.1,8,o.skin).tr(0,.04,0))),[0,.54,0]);
-  addTo(R.head,Node(m('face',()=>GEO.sph(.115,12,o.skin).sc(1,1.08,1).tr(0,.17,0))));
-  addTo(R.head,Node(m('hair',()=>{
-    const g=GEO.merge(GEO.sph(.128,12,o.hair).sc(1.03,.96,1.06).tr(0,.205,-.018),GEO.box(.25,.07,.06,o.hair).tr(0,.27,.09),
+  // 목 + 얼굴 + 머리카락을 하나의 메시로 합쳐 그리기 횟수를 줄인다
+  R.head=addTo(R.torso,Node(m('head',()=>{
+    const g=GEO.merge(GEO.cyl(.05,.055,.1,8,o.skin).tr(0,.04,0),GEO.sph(.115,12,o.skin).sc(1,1.08,1).tr(0,.17,0),
+      GEO.sph(.128,12,o.hair).sc(1.03,.96,1.06).tr(0,.205,-.018),GEO.box(.25,.07,.06,o.hair).tr(0,.27,.09),
       GEO.box(.05,.2,.08,o.hair).tr(.117,.13,.02),GEO.box(.05,.2,.08,o.hair).tr(-.117,.13,.02));
     if(o.hairLong)g.add(GEO.box(.25,o.hairLong,.07,o.hair).tr(0,.2-o.hairLong/2,-.1));
     if(o.bun)g.add(GEO.sph(.075,10,o.hair).tr(0,.3,-.13));
     if(o.hairTip)g.add(GEO.box(.054,.06,.084,o.hairTip).tr(.117,.02,.02),GEO.box(.054,.06,.084,o.hairTip).tr(-.117,.02,.02));
     if(o.streak)g.add(GEO.box(.045,.09,.066,o.streak).tr(.065,.26,.1),GEO.box(.03,.22,.075,o.streak).tr(.118,.12,.02));
     if(o.helmet)g.add(GEO.sph(.14,10,o.helmet).sc(1,.9,1.1).tr(0,.2,0),GEO.box(.2,.03,.02,'#b46cff').tr(0,.18,.14));
-    return g;})));
+    return g;})),[0,.54,0]);
   addTo(R.head,Node(m('eyes',()=>GEO.merge(GEO.box(.036,.02,.01,'#fff').tr(.045,.17,.109),GEO.box(.036,.02,.01,'#fff').tr(-.045,.17,.109))),{mode:1,tint:hex(o.eye||'#6a5cff').slice()}));
   for(const [s,nm] of [[-1,'L'],[1,'R']]){
     const arm=addTo(R.torso,Node(m('upper',()=>GEO.cyl(.06*bw,.05*bw,.3,8,o.sleeve||o.coat).tr(0,-.15,0))),[s*.235*bw,.47,0]);
-    const fore=addTo(arm,Node(m('fore',()=>GEO.cyl(.05*bw,.043*bw,.27,8,o.sleeve||o.coat).tr(0,-.135,0))),[0,-.3,0]);
-    const hand=addTo(fore,Node(m('hand',()=>GEO.sph(.048*bw,8,o.glove||o.skin))),[0,-.29,0]);
+    const fore=addTo(arm,Node(m('fore',()=>GEO.merge(GEO.cyl(.05*bw,.043*bw,.27,8,o.sleeve||o.coat).tr(0,-.135,0),GEO.sph(.048*bw,8,o.glove||o.skin).tr(0,-.29,0)))),[0,-.3,0]);
+    const hand=addTo(fore,Node(),[0,-.29,0]); // 무기를 붙이는 지점 (메시 없음)
     R['arm'+nm]=arm;R['fore'+nm]=fore;R['hand'+nm]=hand;
   }
   if(o.scale)R.root.s=[o.scale,o.scale,o.scale];
@@ -67,6 +67,16 @@ function equip(R,wid,where,extra){
   host.ch.push(w);R.weapons.push({node:w,def:d,where});return w;
 }
 
+/* 두 무기를 가진 캐릭터: 하나는 손에, 하나는 등에. setHeld 로 바꿔 쥔다 */
+function equipPair(R,ids,held){R.wpn={};for(const id of ids)R.wpn[id]=WEAPONS[id].build();setHeld(R,held||ids[0]);}
+function setHeld(R,id){
+  for(const w of R.weapons){const host=w.where==='back'?R.torso:R.handR,i=host.ch.indexOf(w.node);if(i>=0)host.ch.splice(i,1);}
+  R.weapons=[];
+  for(const wid in R.wpn){const n=R.wpn[wid],d=WEAPONS[wid];n.vis=true;
+    if(wid===id){n.p=[0,0,0];n.r=d.rest.slice();R.handR.ch.push(n);R.weapons.push({node:n,def:d,where:'R'});}
+    else{const b=d.back||{p:[.14,.7,-.17],r:[.15,0,-.5]};n.p=b.p.slice();n.r=b.r.slice();R.torso.ch.push(n);R.weapons.push({node:n,def:d,where:'back'});}}
+  R.held=id;R.kind=WEAPONS[id].kind||null;
+}
 /* ---------- 기본 사람형 동작 ---------- */
 function animHuman(R,s,kind){
   const t=s.t||0,mv=s.move||0,ph=t*10.5,sw=Math.sin(ph)*mv;
@@ -110,13 +120,13 @@ AVATARS.eden={
   name:'대행자 이든',kind:'dual',heavy:'spin',shadow:.45,
   build(){const R=humanoid({key:'eden',skin:'#f2e2d8',hair:'#15151d',hairTip:'#c9ccd8',coat:'#17171f',coat2:'#23232f',pants:'#101015',tail:'#17171f',
       neon:'#5fd0ff',eye:'#a98bff',collar:'#23232f',glove:'#1a1a22'});
-    equip(R,'sentia','R');equip(R,'sensus','L');return R;},
+    equipPair(R,['sentia','sensus']);return R;},
 };
 AVATARS.nesis={
   name:'집행자 네시스',kind:'great',heavy:'slam',shadow:.45,
   build(){const R=humanoid({key:'nesis',skin:'#f4e6de',hair:'#eef2f8',streak:'#3b9dff',bun:1,hairLong:.36,coat:'#e9eef6',coat2:'#3b6fd8',pants:'#1d2333',
       tail:'#dfe7f2',skirt:1,neon:'#9fdcff',eye:'#5fb8ff',sleeve:'#dfe6f0',glove:'#2b3550',boots:'#2b3550'});
-    equip(R,'eruptio','R');equip(R,'klausroom','back');return R;},
+    equipPair(R,['eruptio','klausroom']);return R;},
 };
 /* ================= 아군 (분노의 우니타스) ================= */
 AVATARS.rexor={name:'렉소르',kind:'chop',shadow:.5,
@@ -205,11 +215,20 @@ AVATARS.phasis={name:'파시스',kind:'cast',shadow:.6,
   },
 };
 
+/* ================= 에고 (호출 스킬로 나타나는 무기의 모습) =================
+   설정 자료에 외형이 없어 무기 색을 입힌 반투명 인간형으로 임시 제작. 외형이 정해지면 build()만 교체. */
+function egoAvatar(key,o,wid,kind){return{name:WEAPONS[wid].name,kind,shadow:.4,ego:o.glow,
+  build(){const R=humanoid(Object.assign({key,skin:'#f6f4ff',pants:'#20243a',eye:'#ffffff'},o));equip(R,wid,'R');return R;}};}
+AVATARS.ego_sentia=egoAvatar('ego_sentia',{hair:'#7fd8ff',hairLong:.3,coat:'#2a5f9a',coat2:'#59c8ff',neon:'#bff0ff',glow:'#59c8ff',scale:1.02},'sentia','dual');
+AVATARS.ego_sensus=egoAvatar('ego_sensus',{hair:'#d8b0ff',bun:1,coat:'#5a2f8a',coat2:'#c77dff',neon:'#f0d8ff',glow:'#c77dff',scale:.85},'sensus','dual');
+AVATARS.ego_klausroom=egoAvatar('ego_klausroom',{hair:'#ffffff',hairLong:.5,coat:'#d8dde6',coat2:'#f2f6ff',neon:'#ffffff',glow:'#e8f2ff',tail:'#e8ecf4',skirt:1,scale:1.08},'klausroom','dual');
+AVATARS.ego_eruptio=egoAvatar('ego_eruptio',{hair:'#3d7dff',coat:'#1d2c55',coat2:'#5aa9ff',neon:'#9fd0ff',glow:'#5aa9ff',bulk:1.2,scale:1.12},'eruptio','great');
+
 /* 공통 진입점 */
 function makeAvatar(id){
   const d=AVATARS[id];const R=d.build();R.def=d;R.id=id;return R;
 }
 function animateAvatar(R,s){
-  const d=R.def;if(d.anim)d.anim(R,s);else animHuman(R,s,s.pose==='heavy'?(d.heavy==='spin'?'dual':'great'):d.kind);
+  const d=R.def;if(d.anim)d.anim(R,s);else animHuman(R,s,s.pose==='heavy'?(d.heavy==='spin'?'dual':'great'):(R.kind||d.kind));
   updWeapons(R,s.t||0);
 }

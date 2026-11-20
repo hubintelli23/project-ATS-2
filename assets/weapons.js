@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.4.0
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.5.0
    assets/weapons.js — 무기 · 아티팩트
 
    새 무기 추가 방법
@@ -7,6 +7,8 @@
      name:'표시 이름', owner:'주인', desc:'설명',
      trail:'#색',            // 휘두를 때 궤적 색
      rest:[x,y,z],           // 평소 쥐는 각도 (손 기준 회전, 라디안)
+     back:{p:[x,y,z],r:[x,y,z]}, // (선택) 등에 멜 때 위치·각도
+     kind:'dual'|'great',    // (선택) 이 무기를 들었을 때의 공격 동작
      build(){ return 노드 } // 손잡이를 원점(0,0,0)에, 칼날은 -Y 방향으로 만든다
      update(node,t){}        // (선택) 매 프레임 반짝임 등
    };
@@ -29,7 +31,7 @@ function hilt(len,col,guardW,guardCol){
 }
 
 WEAPONS.sentia={
-  name:'센티아',owner:'이든',desc:'푸른 전기를 머금은 에고 웨폰. 냉철한 판단으로 적의 사각을 읽는다.',trail:'#59c8ff',rest:[-0.5,0,0.15],
+  name:'센티아',owner:'이든',desc:'푸른 전기를 머금은 에고 웨폰. 냉철한 판단으로 적의 사각을 읽는다.',trail:'#59c8ff',rest:[-0.5,0,0.15],kind:'dual',back:{p:[.14,.7,-.17],r:[.15,0,-.5]},
   build(){
     const n=Node(MESH.get('w_sentia_h',()=>hilt(.2,'#1c2433',.16,'#3a4a66')));
     addTo(n,Node(MESH.get('w_sentia_b',()=>bladeGeo(.9,.07,.018,'#cfeeff','#ffffff')),{name:'blade'}));
@@ -39,7 +41,7 @@ WEAPONS.sentia={
   update(n,t){const g=n.ch[1];if(g)g.tint[3]=.35+.3*Math.abs(Math.sin(t*23+Math.sin(t*7)));},
 };
 WEAPONS.sensus={
-  name:'센수스',owner:'이든',desc:'보랏빛 폭풍의 에고 웨폰. 천진난만하지만 이든을 지키는 일에는 누구보다 사납다.',trail:'#c77dff',rest:[-0.5,0,-0.15],
+  name:'센수스',owner:'이든',desc:'보랏빛 폭풍의 에고 웨폰. 천진난만하지만 이든을 지키는 일에는 누구보다 사납다.',trail:'#c77dff',rest:[-0.5,0,0.15],kind:'dual',back:{p:[.14,.7,-.17],r:[.15,0,-.5]},
   build(){
     const n=Node(MESH.get('w_sensus_h',()=>hilt(.2,'#251a33',.18,'#5a3a80')));
     addTo(n,Node(MESH.get('w_sensus_b',()=>GEO.merge(bladeGeo(.85,.09,.02,'#e6d2ff','#ffffff'),GEO.box(.02,.12,.025,'#7a3fc0').tr(.05,-.3,0),GEO.box(.02,.12,.025,'#7a3fc0').tr(-.05,-.55,0)))));
@@ -49,7 +51,7 @@ WEAPONS.sensus={
   update(n,t){const g=n.ch[1];if(g)g.tint[3]=.3+.25*Math.sin(t*9);},
 };
 WEAPONS.eruptio={
-  name:'이럽디오',owner:'네시스',desc:'푸른 불꽃의 대검. 켄오바에서 넘어온 콘솔라티오 중 하나.',trail:'#5aa9ff',rest:[2.55,0,0.2],
+  name:'이럽디오',owner:'네시스',desc:'푸른 불꽃의 대검. 켄오바에서 넘어온 콘솔라티오 중 하나.',trail:'#5aa9ff',rest:[2.55,0,0.2],kind:'great',back:{p:[.12,.74,-.2],r:[.12,0,-.38]},
   build(){
     const n=Node(MESH.get('w_eruptio_h',()=>hilt(.34,'#1d2333',.34,'#9fb7d8')));
     addTo(n,Node(MESH.get('w_eruptio_b',()=>GEO.merge(bladeGeo(1.45,.2,.035,'#eaf3ff','#ffffff'),GEO.box(.05,1.2,.04,'#3d7dff').tr(0,-.7,0)))));
@@ -59,7 +61,7 @@ WEAPONS.eruptio={
   update(n,t){const f=n.ch[1];if(f){f.s[0]=1+.15*Math.sin(t*17);f.s[2]=1+.2*Math.sin(t*13);f.tint[3]=.3+.15*Math.sin(t*11);}},
 };
 WEAPONS.klausroom={
-  name:'클라우스룸',owner:'네시스',desc:'백색 에너지의 검. 냉정하고 이성적인 조언자. (체험판에서는 등에 메고 있음)',trail:'#f2f6ff',rest:[0,0,0],
+  name:'클라우스룸',owner:'네시스',desc:'백색 에너지의 검. 냉정하고 이성적인 조언자. 켄오바에서 넘어온 콘솔라티오 중 하나.',trail:'#f2f6ff',rest:[-0.5,0,0.15],kind:'dual',back:{p:[.14,.7,-.17],r:[.15,0,-.5]},
   build(){
     const n=Node(MESH.get('w_klaus_h',()=>hilt(.22,'#d8dde6',.2,'#f2f6ff')));
     addTo(n,Node(MESH.get('w_klaus_s',()=>GEO.cyl(.06,.05,1.0,8,'#e6ebf3').tr(0,-.5,0).sc(1,1,.45))));

@@ -1,16 +1,17 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.4.0
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.5.0
    js/core.js — 화면 크기, 저장, 효과음, 입력(통일 조작 체계)
 
    통일 조작 체계 (PC)
      WASD 이동 · Shift 회피 · 우클릭 대쉬 · 좌클릭 공격 · 좌클릭 0.5초 홀딩 강공격
      Space 점프 · Space+좌클릭 점프 공격 · Space+좌클릭+Ctrl 점프 강공격
-     Q·E 스킬 · R 궁극기(링크 0) · Tab 전환 · F 줍기(상호작용) · M 지도 · Esc 설정
+     Q·E 스킬 · R 궁극기(링크 0) · Tab 전환 · X(휠) 무기 전환 · Z 호출 · F 줍기(상호작용) · M 지도 · Esc 설정
    휴대폰은 같은 기능을 화면 버튼으로 제공한다.
    UI 모드: SAVE.ui = 'auto'(마지막 입력 기준 자동) | 'pc' | 'touch'
+   마스터 모드: F2 또는 ` 키로 켜기/끄기
    ================================================================== */
 'use strict';
-const VERSION='v0.4.0';
+const VERSION='v0.5.0';
 const $=id=>document.getElementById(id);
 const PI=Math.PI,TAU=PI*2;
 const rand=(a,b)=>a+Math.random()*(b-a);
@@ -25,18 +26,36 @@ const glc=$('gl'),ovc=$('ov'),ov=ovc.getContext('2d');
 let W=0,H=0,DPR=1;
 function resize(){
   DPR=Math.min(2,window.devicePixelRatio||1);W=window.innerWidth;H=window.innerHeight;
-  R3.resize(W,H,DPR);ovc.width=Math.round(W*DPR);ovc.height=Math.round(H*DPR);
+  R3.resize(W,H,renderScale());ovc.width=Math.round(W*DPR);ovc.height=Math.round(H*DPR);
   for(const c of [glc,ovc]){c.style.width=W+'px';c.style.height=H+'px';}
   const rot=$('rot');if(rot)rot.classList.toggle('hide',!(H>W&&W<700));
 }
 
 /* ---------------- 저장 ---------------- */
-const SAVE={unlocked:0,snd:true,sens:1,ui:'auto',master:null};
+const SAVE={unlocked:0,snd:true,sens:1,ui:'auto',gfx:'auto',master:null};
 try{const s=JSON.parse(localStorage.getItem('as0s2_save')||'{}');Object.assign(SAVE,s);}catch(e){}
 /* 마스터 모드 (테스트·감상용): on 이 켜져 있을 때만 각 항목이 적용된다 */
 SAVE.master=Object.assign({on:false,skip:true,nocd:true,god:false,link:false,dmg:false,unlock:true},SAVE.master||{});
 const MASTER_OPTS=[['skip','스토리·전투 건너뛰기 버튼'],['nocd','쿨타임 제거 (스킬·교대·회피·대쉬)'],['god','무적 (방어막 발생기 포함)'],['link','링크 게이지 무한'],['dmg','공격력 10배'],['unlock','모든 막 열기']];
 function M(k){return SAVE.master.on&&!!SAVE.master[k];}
+
+/* ---------------- 그래픽 해상도 (휴대폰 최적화) ----------------
+   자동: 프레임이 느리면 3D 화면 해상도를 낮추고, 여유가 생기면 다시 올린다. 글자·UI는 그대로 선명하다. */
+const GFX={auto:0,ema:16,acc:0,good:0};
+function devScale(){return Math.min(2,window.devicePixelRatio||1);}
+function renderScale(){
+  if(SAVE.gfx==='high')return devScale();
+  if(SAVE.gfx==='low')return Math.min(1,devScale())*.7;
+  if(!GFX.auto)GFX.auto=Math.min(devScale(),window.matchMedia&&matchMedia('(pointer:coarse)').matches?1.5:2);
+  return GFX.auto;
+}
+function gfxTick(ms){ // main.js 가 매 프레임 호출
+  GFX.ema+=(ms-GFX.ema)*.05;GFX.acc+=ms;if(GFX.acc<1000||SAVE.gfx!=='auto')return;GFX.acc=0;
+  const s=GFX.auto;
+  if(GFX.ema>24&&s>.6){GFX.auto=Math.max(.6,s-.15);GFX.good=0;resize();}
+  else if(GFX.ema<15&&s<devScale()){if(++GFX.good>=3){GFX.auto=Math.min(devScale(),s+.1);GFX.good=0;resize();}}
+  else GFX.good=0;
+}
 function persist(){try{localStorage.setItem('as0s2_save',JSON.stringify(SAVE));}catch(e){}}
 
 /* ---------------- 효과음 (파일 없이 합성) ---------------- */
@@ -84,12 +103,13 @@ const SFX={
 
 /* ---------------- 입력 ---------------- */
 const keys={};
-const inp={mx:0,my:0,jx:0,jy:0,atkDown:false,atkPress:false,atkRel:false,atkCtrl:false,dodgeP:false,dashP:false,qP:false,eP:false,rP:false,tagP:false,jumpP:false,fP:false,mapP:false,
+const inp={mx:0,my:0,jx:0,jy:0,atkDown:false,atkPress:false,atkRel:false,atkCtrl:false,dodgeP:false,dashP:false,qP:false,eP:false,rP:false,tagP:false,jumpP:false,fP:false,swapP:false,callP:false,
   lookX:0,lookY:0,lookT:9,touch:false};
 const GS={mode:'title',t:0,bg:'title',paused:false,locked:false,map:false};
-const KEYACT={ShiftLeft:'dodge',ShiftRight:'dodge',KeyQ:'q',KeyE:'e',KeyR:'r',Tab:'tag',Space:'jump',KeyF:'f'};
+const KEYACT={ShiftLeft:'dodge',ShiftRight:'dodge',KeyQ:'q',KeyE:'e',KeyR:'r',Tab:'tag',Space:'jump',KeyF:'f',KeyX:'swap',KeyZ:'call'};
 window.addEventListener('keydown',e=>{
   audioInit();
+  if(e.code==='F2'||e.code==='Backquote'){e.preventDefault();if(!e.repeat)toggleMasterMode();return;}
   if(e.code==='Tab'||(e.code==='Space'&&GS.mode==='battle'))e.preventDefault();
   if(e.repeat)return;
   keys[e.code]=true;autoUI('pc');
@@ -100,6 +120,7 @@ window.addEventListener('keydown',e=>{
   if((e.code==='Enter'||e.code==='Space'||e.code==='KeyF')&&GS.mode==='dialog'){dlgAdvance();e.preventDefault();}
 });
 window.addEventListener('keyup',e=>{keys[e.code]=false;});
+let wheelT=0;window.addEventListener('wheel',e=>{if(GS.mode!=='battle'||GS.paused||GS.map)return;const n=performance.now();if(n-wheelT>350&&Math.abs(e.deltaY)>4){wheelT=n;inp.swapP=true;}},{passive:true});
 window.addEventListener('blur',()=>{for(const k in keys)keys[k]=false;inp.atkDown=false;inp.jx=inp.jy=0;});
 
 /* 마우스: 포인터 잠금 상태에서 시점 회전 / 좌클릭 공격 / 우클릭 대쉬 */
@@ -165,7 +186,7 @@ function readMove(){
   if(keys.ArrowLeft){inp.lookX-=6;inp.lookT=0;}if(keys.ArrowRight){inp.lookX+=6;inp.lookT=0;}
   if(keys.ArrowUp){inp.lookY-=4;inp.lookT=0;}if(keys.ArrowDown){inp.lookY+=4;inp.lookT=0;}
 }
-function clearPresses(){inp.dodgeP=inp.dashP=inp.qP=inp.eP=inp.rP=inp.tagP=inp.jumpP=inp.fP=false;inp.atkPress=false;inp.lookX=inp.lookY=0;}
+function clearPresses(){inp.dodgeP=inp.dashP=inp.qP=inp.eP=inp.rP=inp.tagP=inp.jumpP=inp.fP=inp.swapP=inp.callP=false;inp.atkPress=false;inp.lookX=inp.lookY=0;}
 
 function show(id,on){$(id).classList.toggle('hide',!on);}
 function flash(col,a){const f=$('flash');f.style.background=col||'#fff';f.style.transition='none';f.style.opacity=a||0.6;

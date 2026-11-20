@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.4.0
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.5.0
    js/story.js — 등장인물, 대본, 대화 진행, 대화 장면(3D 무대)
 
    대본(RAW) 줄 형식
@@ -294,6 +294,15 @@ function masterRefresh(){ // 버튼·배지 표시 갱신
   show('mBadge',SAVE.master.on&&GS.mode!=='title');
 }
 function openMaster(){masterUI();show('master',true);}
+/* F2 / ` : 마스터 모드 켜기·끄기 */
+function toggleMasterMode(){
+  SAVE.master.on=!SAVE.master.on;persist();SFX.ui();
+  if(!$('master').classList.contains('hide'))masterUI();else masterRefresh();
+  if(!$('chap').classList.contains('hide'))buildChap();
+  toast('마스터 모드 '+(SAVE.master.on?'켜짐':'꺼짐'));
+}
+let toastT=null;
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),1600);}
 $('mOn').onclick=()=>{SAVE.master.on=!SAVE.master.on;persist();SFX.ui();masterUI();};
 $('mClose').onclick=()=>{SFX.ui();show('master',false);masterRefresh();if(!$('chap').classList.contains('hide'))buildChap();};
 $('mMaster').onclick=()=>{audioInit();SFX.ui();openMaster();};

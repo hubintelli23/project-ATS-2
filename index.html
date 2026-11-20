@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.4.0 · 3D -->
+<!-- 액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.5.0 · 3D -->
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#07060d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<title>액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판 v0.4.0)</title>
+<title>액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판 v0.5.0)</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -61,6 +61,8 @@
       <div class="ptk"><span class="key">Tab</span> 전환</div>
     </div>
     <div id="ksbar" class="pconly">
+      <div class="ks" id="ksX"><span class="key">X</span><em id="ksXn"></em><small class="ksl">무기</small></div>
+      <div class="ks" id="ksZ"><span class="key">Z</span><em id="ksZn"></em><div class="cd hide" id="ksZc"></div></div>
       <div class="ks" id="ksQ"><span class="key">Q</span><em id="ksQn"></em><div class="cd hide" id="ksQc"></div></div>
       <div class="ks" id="ksE"><span class="key">E</span><em id="ksEn"></em><div class="cd hide" id="ksEc"></div></div>
       <div class="ks big" id="ksR"><div class="rg" id="ksRg"></div><span class="key">R</span><em>링크 0</em><small id="ksRp">0%</small></div>
@@ -69,7 +71,8 @@
       <div><span class="key">좌클릭</span> 공격 · <span class="key">홀딩 0.5초</span> 강공격</div>
       <div><span class="key">우클릭</span> 대쉬 · <span class="key">Shift</span> 회피</div>
       <div><span class="key">Space</span> 점프 → <span class="key">좌클릭</span> 점프 공격 · <span class="key">Ctrl+좌클릭</span> 점프 강공격</div>
-      <div><span class="key">F</span> 줍기 · <span class="key">M</span> 지도 · <span class="key">Esc</span> 설정 <b id="ksH"></b></div>
+      <div><span class="key">X</span>·<span class="key">휠</span> 무기 전환 · <span class="key">Z</span> 호출 · <span class="key">Tab</span> 캐릭터 전환</div>
+      <div><span class="key">F</span> 줍기 · <span class="key">M</span> 지도 · <span class="key">Esc</span> 설정 · <span class="key">F2</span> 마스터 <b id="ksH"></b></div>
     </div>
   </div>
   <button id="pauseB" class="hide">❚❚</button>
@@ -89,6 +92,8 @@
       <div class="cb" id="bR" data-a="r">링크<small>R</small></div>
       <div class="cb" id="bTag" data-a="tag"><span id="tgN">교대</span><div class="cd hide" id="cdT"></div></div>
       <div class="cb" id="bJump" data-a="jump">점프</div>
+      <div class="cb" id="bSwap" data-a="swap"><span id="swN">무기</span><small>무기 전환</small></div>
+      <div class="cb" id="bCall" data-a="call"><span id="clN">호출</span><small>호출</small><div class="cd hide" id="cdZ"></div></div>
       <div class="cb hide" id="bF" data-a="f">줍기</div>
     </div>
     <button class="sbtn" id="bMap">지도</button>
@@ -101,6 +106,7 @@
     <button class="btn" id="pSnd">효과음: 켜짐</button>
     <button class="btn" id="pSens">카메라 감도: 보통</button>
     <button class="btn" id="pUI">조작 UI: 자동</button>
+    <button class="btn" id="pGfx">그래픽: 자동</button>
     <button class="btn master" id="pMaster">마스터 모드</button>
     <button class="btn" id="pTitle">타이틀로</button>
   </div>
@@ -111,7 +117,7 @@
   </div>
   <div id="master" class="ov hide">
     <h2>마스터 모드</h2>
-    <div class="hint">스토리를 건너뛰고 쿨타임 없이 자유롭게 테스트하는 모드예요. 저장되며 언제든 끌 수 있어요.</div>
+    <div class="hint">스토리를 건너뛰고 쿨타임 없이 자유롭게 테스트하는 모드예요. 저장되며 언제든 끌 수 있어요.<br><span class="key">F2</span> 또는 <span class="key">`</span> 키로 어디서든 켜고 끌 수 있어요.</div>
     <button class="btn" id="mOn">마스터 모드: 꺼짐</button>
     <div class="mgrid" id="mOpts"></div>
     <div class="hint" style="margin-top:4px">전투 바로가기 (끝나면 그 다음 이야기로 이어져요)</div>
@@ -137,6 +143,7 @@
     <button class="btn" id="fTitle">타이틀로</button>
     <div class="ver" id="verF"></div>
   </div>
+  <div id="toast"></div>
   <div id="flash"></div>
 </div>
 <div id="nogl" class="hide">이 브라우저는 3D(WebGL2)를 지원하지 않아요.<br>최신 Chrome · Safari · Edge에서 열어 주세요.</div>

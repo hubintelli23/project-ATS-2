@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.4.0
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.5.0
    assets/backgrounds.js — 배경 (대화 장면 + 전투 맵)
 
    새 배경 추가 방법
@@ -30,7 +30,8 @@ function drawSky(key,c){R3.draw(skyMesh(key,c.sky[0],c.sky[1]),mat(R3.cam.pos[0]
 /* 떠다니는 먼지·재 */
 function motes(cx,cz,n,spread,col,dir,size){
   const P=[];const r=PR(n*77+spread);for(let i=0;i<n;i++)P.push([r(),r(),r(),r()]);
-  return t=>{for(const p of P){let y=((p[1]+t*.05*dir*(.4+p[3]))%1+1)%1;R3.draw(FX.m.oct,mat(cx+(p[0]-.5)*spread+Math.sin(t*.5+p[3]*9)*.6,y*12,cz+(p[2]-.5)*spread,t+p[3]*9,size||.05),{mode:2,tint:col,a:.7});}};
+  const c=hex(col),s=size||.05;
+  return t=>{for(const p of P){const y=((p[1]+t*.05*dir*(.4+p[3]))%1+1)%1;R3.pt(cx+(p[0]-.5)*spread+Math.sin(t*.5+p[3]*9)*.6,y*12,cz+(p[2]-.5)*spread,s,c,.7);}};
 }
 
 /* ---------- 전초기지 방어막 발생기 (전투에서도 사용) ---------- */

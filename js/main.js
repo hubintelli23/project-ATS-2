@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.4.0
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.5.0
    js/main.js — 시작과 메인 루프
    ================================================================== */
 'use strict';
@@ -10,7 +10,7 @@
   FX.init();resize();window.addEventListener('resize',resize);
   let last=performance.now();
   function frame(now){
-    let rdt=Math.min(.05,(now-last)/1000);last=now;
+    const ms=now-last;let rdt=Math.min(.05,ms/1000);last=now;gfxTick(ms);
     if(GS.paused)rdt=0;
     GS.t+=rdt;
     try{
