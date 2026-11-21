@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.6.1
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.7.1
    assets/effects.js — 이펙트 (베기 궤적, 충격파, 번개, 입자, 공격 예고 표시, 투사체, 피해 숫자)
 
    좌표는 모두 월드 미터(m) 기준. y = 높이.
@@ -114,11 +114,11 @@ const FX={
     if(Math.random()<.9){const a=Math.random()*6.28;const rr=r*.95;this.parts.push({x:x+Math.cos(a)*rr,y:.3+Math.random()*1.5,z:z+Math.sin(a)*rr,vx:-Math.cos(a)*rr*2.2,vy:.5,vz:-Math.sin(a)*rr*2.2,life:.4,max:.4,col:Math.random()<.5?'#9b6bff':'#e0d0ff',size:.09,grav:0});}
   },
   /* 네시스 — 이럽디오 불꽃 파동 */
-  flameWave(x,z,ang,r,t,purple){ // purple = 센수스 폭풍 파동
-    const c1=purple?'#c77dff':'#6cb8ff',c2=purple?'#7a3fc0':'#3d7dff';
+  flameWave(x,z,ang,r,t,purple,green){ // purple = 센수스 폭풍 파동, green = 이럽디오 녹염
+    const c1=purple?'#c77dff':green?'#7dff8a':'#6cb8ff',c2=purple?'#7a3fc0':green?'#1fbf4a':'#3d7dff';
     R3.draw(this.sectorMesh(r*.5,r,1.7,'#000000'),mat(x,.8,z,-ang,1,1,1,0,0),{mode:2,tint:c1,a:.9});
     R3.draw(this.sectorMesh(r*.5,r,1.7,'#000000'),mat(x,.4,z,-ang,1,1,1,0,0),{mode:2,tint:c2,a:.7});
-    this.trail(x,.6,z,Math.random()<.5?c1:'#e8dcff',.12);
+    this.trail(x,.6,z,Math.random()<.5?c1:green?'#d8ffe0':'#e8dcff',.12);
   },
   orb(x,y,z,r,col){R3.draw(this.m.sph,mat(x,y,z,0,r),{mode:2,tint:col,a:.95});R3.draw(this.m.sph,mat(x,y,z,0,r*2.2),{mode:2,tint:col,a:.25});},
   needle(x,y,z,ang,col){R3.draw(this.m.needle,mat(x,y,z,Math.PI/2-ang,1.3),{mode:2,tint:col||'#efe2ff',a:1});},

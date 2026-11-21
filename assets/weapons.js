@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.6.1
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.7.1
    assets/weapons.js — 무기 · 아티팩트
 
    새 무기 추가 방법
@@ -26,39 +26,51 @@ function bladeGeo(L,w,d,col,tipCol){
     g.v(a[0],a[1],d/2,nx/l,ny/l,0,c);g.v(b[0],b[1],d/2,nx/l,ny/l,0,c);g.v(b[0],b[1],-d/2,nx/l,ny/l,0,c);g.v(a[0],a[1],-d/2,nx/l,ny/l,0,c);g.i.push(o,o+1,o+2,o,o+2,o+3);}
   return g;
 }
+/* 휘어진 칼날 (도) — 손잡이 원점, -Y 방향으로 뻗으며 X 쪽으로 휜다 */
+function curvedBladeGeo(L,w,d,curve,col,tipCol,n){
+  n=n||10;const g=new Geo(),c=hex(col),tc=hex(tipCol||col),P=[];
+  for(let i=0;i<=n;i++){const t=i/n,x=curve*t*t*L,y=-t*L,hw=w/2*(t>.85?(1-t)/.15:1);P.push([x,y,hw]);}
+  for(const z of [d/2,-d/2]){const o=g.vc;for(const [x,y,hw] of P){const cc=y<-L*.8?tc:c;g.v(x-hw,y,z,0,0,Math.sign(z),cc);g.v(x+hw,y,z,0,0,Math.sign(z),cc);}
+    for(let i=0;i<n;i++){const k=o+i*2;g.i.push(k,k+1,k+3,k,k+3,k+2);}}
+  return g;
+}
 function hilt(len,col,guardW,guardCol){
   return GEO.merge(GEO.cyl(.022,.022,len,8,col).tr(0,len/2,0),GEO.box(guardW,.035,.06,guardCol||'#2a2a35').tr(0,0,0),GEO.sph(.03,8,guardCol||'#2a2a35').tr(0,len,0));
 }
 
+/* 센티아 — 일러스트: 길고 가늘게 휜 은빛 도 + 푸른 번개 */
 WEAPONS.sentia={
-  name:'센티아',owner:'이든',desc:'푸른 전기를 머금은 에고 웨폰. 냉철한 판단으로 적의 사각을 읽는다.',trail:'#59c8ff',rest:[-0.5,0,0.15],kind:'dual',back:{p:[.14,.7,-.17],r:[.15,0,-.5]},
+  name:'센티아',owner:'이든',desc:'푸른 전기를 머금은 에고 웨폰. 냉철한 판단으로 적의 사각을 읽는다.',trail:'#59c8ff',rest:[-0.5,0,0.15],kind:'dual',back:{p:[.14,.7,-.17],r:[.15,0,-.5]},img:'sentia',
   build(){
-    const n=Node(MESH.get('w_sentia_h',()=>hilt(.2,'#1c2433',.16,'#3a4a66')));
-    addTo(n,Node(MESH.get('w_sentia_b',()=>bladeGeo(.9,.07,.018,'#cfeeff','#ffffff')),{name:'blade'}));
-    addTo(n,Node(MESH.get('w_sentia_g',()=>bladeGeo(.92,.11,.004,'#59c8ff')),{mode:2,tint:[1,1,1,.55],name:'glow'}));
+    const n=Node(MESH.get('w_sentia_h2',()=>GEO.merge(GEO.cyl(.02,.02,.26,8,'#20242e').tr(0,.13,0),GEO.cyl(.05,.05,.02,10,'#9aa6b8').tr(0,0,0),GEO.sph(.022,8,'#59c8ff').tr(0,.27,0))));
+    addTo(n,Node(MESH.get('w_sentia_b2',()=>curvedBladeGeo(1.05,.045,.012,.12,'#e4eaf2','#ffffff',12)),{name:'blade'}));
+    addTo(n,Node(MESH.get('w_sentia_g2',()=>curvedBladeGeo(1.07,.1,.004,.12,'#59c8ff','#bff0ff',12)),{mode:2,tint:[1,1,1,.55],name:'glow'}));
     return n;
   },
-  update(n,t){const g=n.ch[1];if(g)g.tint[3]=.35+.3*Math.abs(Math.sin(t*23+Math.sin(t*7)));},
+  update(n,t){const g=n.ch[1];if(g)g.tint[3]=.3+.35*Math.abs(Math.sin(t*23+Math.sin(t*7)));},
 };
+/* 센수스 — 일러스트: 곧은 은빛 검 + 금빛·주황 가드 */
 WEAPONS.sensus={
-  name:'센수스',owner:'이든',desc:'보랏빛 폭풍의 에고 웨폰. 천진난만하지만 이든을 지키는 일에는 누구보다 사납다.',trail:'#c77dff',rest:[-0.5,0,0.15],kind:'dual',back:{p:[.14,.7,-.17],r:[.15,0,-.5]},
+  name:'센수스',owner:'이든',desc:'보랏빛 폭풍의 에고 웨폰. 천진난만하지만 이든을 지키는 일에는 누구보다 사납다.',trail:'#c77dff',rest:[-0.5,0,0.15],kind:'dual',back:{p:[.14,.7,-.17],r:[.15,0,-.5]},img:'sensus',
   build(){
-    const n=Node(MESH.get('w_sensus_h',()=>hilt(.2,'#251a33',.18,'#5a3a80')));
-    addTo(n,Node(MESH.get('w_sensus_b',()=>GEO.merge(bladeGeo(.85,.09,.02,'#e6d2ff','#ffffff'),GEO.box(.02,.12,.025,'#7a3fc0').tr(.05,-.3,0),GEO.box(.02,.12,.025,'#7a3fc0').tr(-.05,-.55,0)))));
-    addTo(n,Node(MESH.get('w_sensus_g',()=>bladeGeo(.88,.14,.004,'#c77dff')),{mode:2,tint:[1,1,1,.5],name:'glow'}));
+    const n=Node(MESH.get('w_sensus_h2',()=>GEO.merge(GEO.cyl(.022,.022,.22,8,'#5a1f14').tr(0,.11,0),GEO.box(.2,.04,.06,'#d9902a'),GEO.box(.05,.06,.07,'#ff7a2a').tr(0,0,0),GEO.sph(.03,8,'#d9902a').tr(0,.23,0))));
+    addTo(n,Node(MESH.get('w_sensus_b2',()=>GEO.merge(bladeGeo(.92,.075,.02,'#e6e9ef','#ffffff'),GEO.box(.012,.7,.022,'#b8bec8').tr(0,-.42,0)))));
+    addTo(n,Node(MESH.get('w_sensus_g2',()=>bladeGeo(.94,.13,.004,'#c77dff')),{mode:2,tint:[1,1,1,.3],name:'glow'}));
     return n;
   },
-  update(n,t){const g=n.ch[1];if(g)g.tint[3]=.3+.25*Math.sin(t*9);},
+  update(n,t){const g=n.ch[1];if(g)g.tint[3]=.18+.15*Math.sin(t*9);},
 };
+/* 이럽디오 — 일러스트: 검녹색 대검 + 초록 룬 · 보라 보석 · 초록 불꽃 */
 WEAPONS.eruptio={
-  name:'이럽디오',owner:'네시스',desc:'푸른 불꽃의 대검. 켄오바에서 넘어온 콘솔라티오 중 하나.',trail:'#5aa9ff',rest:[2.55,0,0.2],kind:'great',back:{p:[.12,.74,-.2],r:[.12,0,-.38]},
+  name:'이럽디오',owner:'네시스',desc:'켄오바에서 넘어온 콘솔라티오 중 하나. 거칠게 타오르는 대검.',trail:'#7dff8a',rest:[2.55,0,0.2],kind:'great',back:{p:[.12,.74,-.2],r:[.12,0,-.38]},img:'eruptio',
   build(){
-    const n=Node(MESH.get('w_eruptio_h',()=>hilt(.34,'#1d2333',.34,'#9fb7d8')));
-    addTo(n,Node(MESH.get('w_eruptio_b',()=>GEO.merge(bladeGeo(1.45,.2,.035,'#eaf3ff','#ffffff'),GEO.box(.05,1.2,.04,'#3d7dff').tr(0,-.7,0)))));
-    addTo(n,Node(MESH.get('w_eruptio_f',()=>GEO.cone(.2,1.5,10,'#3d7dff').rx(Math.PI).tr(0,-.8,0).sc(1,1,.5)),{mode:2,tint:[1,1,1,.4],name:'flame'}));
+    const n=Node(MESH.get('w_eruptio_h2',()=>GEO.merge(GEO.cyl(.026,.026,.34,8,'#1a201c').tr(0,.17,0),GEO.box(.36,.05,.08,'#2a3a2e'),GEO.cone(.05,.14,6,'#2a3a2e').rz(Math.PI/2).tr(.22,0,0),GEO.cone(.05,.14,6,'#2a3a2e').rz(-Math.PI/2).tr(-.22,0,0))));
+    addTo(n,Node(MESH.get('w_eruptio_b2',()=>{const g=bladeGeo(1.45,.22,.04,'#1c2a1f','#2e4a34');for(let i=0;i<5;i++)g.add(GEO.cone(.04,.12,4,'#1c2a1f').rz(Math.PI/2).tr(.13,-.25-i*.24,0));return g;})));
+    addTo(n,Node(MESH.get('w_eruptio_r2',()=>GEO.merge(GEO.box(.03,1.15,.045,'#7dff8a').tr(0,-.68,0),GEO.sph(.045,10,'#b46cff').tr(0,-.06,.02))),{mode:1}));
+    addTo(n,Node(MESH.get('w_eruptio_f2',()=>GEO.cone(.2,1.5,10,'#4dff6a').rx(Math.PI).tr(0,-.8,0).sc(1,1,.5)),{mode:2,tint:[1,1,1,.32],name:'flame'}));
     return n;
   },
-  update(n,t){const f=n.ch[1];if(f){f.s[0]=1+.15*Math.sin(t*17);f.s[2]=1+.2*Math.sin(t*13);f.tint[3]=.3+.15*Math.sin(t*11);}},
+  update(n,t){const f=n.ch[2];if(f){f.s[0]=1+.15*Math.sin(t*17);f.s[2]=1+.2*Math.sin(t*13);f.tint[3]=.25+.12*Math.sin(t*11);}},
 };
 WEAPONS.klausroom={
   name:'클라우스룸',owner:'네시스',desc:'백색 에너지의 검. 냉정하고 이성적인 조언자. 켄오바에서 넘어온 콘솔라티오 중 하나.',trail:'#f2f6ff',rest:[-0.5,0,0.15],kind:'dual',back:{p:[.14,.7,-.17],r:[.15,0,-.5]},

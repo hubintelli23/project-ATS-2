@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.6.1
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.7.1
    assets/avatars.js — 아바타 캐릭터 (주인공 · 아군 · 적 · 보스)
 
    새 캐릭터 추가 방법
@@ -34,7 +34,8 @@ function humanoid(o){
   if(o.tail)addTo(R.hips,Node(m('tail',()=>GEO.cyl(.18*bw,(o.skirt?.38:.26)*bw,o.skirt?.8:.56,14,o.tail,false).tr(0,o.skirt?-.34:-.24,0).sc(1,1,o.skirt?1:.8))));
   R.torso=addTo(R.hips,Node(m('torso',()=>{const g=GEO.merge(GEO.cyl(.19*bw,.15*bw,.5,12,o.coat).sc(1,1,.64).tr(0,.27,0),GEO.box(.38*bw,.09,.21*bw,o.coat2||o.coat).tr(0,.5,0));
     if(o.collar)g.add(GEO.cyl(.1,.13,.1,10,o.collar).tr(0,.56,0));if(o.plates)g.add(GEO.box(.2,.12,.26,o.plates).tr(.28*bw,.52,0),GEO.box(.2,.12,.26,o.plates).tr(-.28*bw,.52,0),GEO.box(.3*bw,.26,.05,o.plates).tr(0,.3,.13*bw));return g;})),[0,.06,0]);
-  if(o.neon)addTo(R.torso,Node(m('neon',()=>GEO.merge(GEO.box(.016,.42,.01,'#fff').tr(.065,.27,.122*bw),GEO.box(.016,.42,.01,'#fff').tr(-.065,.27,.122*bw),GEO.box(.3*bw,.014,.01,'#fff').tr(0,.47,.125*bw))),{mode:1,tint:hex(o.neon).slice()}));
+  R.pw=[];
+  if(o.neon)R.neon=addTo(R.torso,Node(m('neon',()=>GEO.merge(GEO.box(.016,.42,.01,'#fff').tr(.065,.27,.122*bw),GEO.box(.016,.42,.01,'#fff').tr(-.065,.27,.122*bw),GEO.box(.3*bw,.014,.01,'#fff').tr(0,.47,.125*bw))),{mode:1,tint:hex(o.neon).slice()}));
   if(o.core)addTo(R.torso,Node(m('core',()=>GEO.sph(.07,10,'#fff').tr(0,.32,.16*bw)),{mode:1,tint:hex(o.core).slice(),name:'core'}));
   // 목 + 얼굴 + 머리카락을 하나의 메시로 합쳐 그리기 횟수를 줄인다
   R.head=addTo(R.torso,Node(m('head',()=>{
@@ -53,7 +54,16 @@ function humanoid(o){
     const fore=addTo(arm,Node(m('fore',()=>GEO.merge(GEO.cyl(.05*bw,.043*bw,.27,8,o.sleeve||o.coat).tr(0,-.135,0),GEO.sph(.048*bw,8,o.glove||o.skin).tr(0,-.29,0)))),[0,-.3,0]);
     const hand=addTo(fore,Node(),[0,-.29,0]); // 무기를 붙이는 지점 (메시 없음)
     R['arm'+nm]=arm;R['fore'+nm]=fore;R['hand'+nm]=hand;
+    if(o.power){ // 권능 집중 때만 보이는 팔·다리 빛 선
+      R.pw.push(addTo(arm,Node(m('pwA',()=>GEO.box(.014,.5,.012,'#fff').tr(0,-.27,.058*bw)),{mode:1,tint:hex(o.neon).slice()})));
+      R.pw.push(addTo(R['leg'+nm],Node(m('pwL'+nm,()=>GEO.box(.014,.62,.012,'#fff').tr(s*.03,-.36,.07*bw)),{mode:1,tint:hex(o.neon).slice()})));
+    }
   }
+  if(o.power&&R.neon){R.pw.push(R.neon);
+    // 백뷰에서도 보이도록 등에도 빛 선
+    R.pw.push(addTo(R.torso,Node(m('pwBk',()=>GEO.merge(GEO.box(.016,.44,.01,'#fff').tr(.07,.27,-.122*bw),GEO.box(.016,.44,.01,'#fff').tr(-.07,.27,-.122*bw),GEO.box(.3*bw,.014,.01,'#fff').tr(0,.47,-.125*bw),GEO.box(.2*bw,.014,.01,'#fff').tr(0,.12,-.12*bw))),{mode:1,tint:hex(o.neon).slice()})));
+    if(o.tail)R.pw.push(addTo(R.hips,Node(m('pwTb',()=>GEO.merge(GEO.box(.014,.5,.012,'#fff').tr(.1*bw,-.3,-.15*bw),GEO.box(.014,.5,.012,'#fff').tr(-.1*bw,-.3,-.15*bw))),{mode:1,tint:hex(o.neon).slice()})));if(o.tail)R.pw.push(addTo(R.hips,Node(m('pwT',()=>GEO.merge(GEO.box(.014,.5,.012,'#fff').tr(.12*bw,-.3,.14*bw),GEO.box(.014,.5,.012,'#fff').tr(-.12*bw,-.3,.14*bw))),{mode:1,tint:hex(o.neon).slice()})));
+    R.pwCol=hex(o.neon).slice();for(const n of R.pw)n.vis=false;}
   if(o.scale)R.root.s=[o.scale,o.scale,o.scale];
   return R;
 }
@@ -119,22 +129,22 @@ function updWeapons(R,t){for(const w of R.weapons)if(w.def.update)w.def.update(w
 AVATARS.eden={
   name:'대행자 이든',kind:'dual',heavy:'spin',shadow:.45,
   build(){const R=humanoid({key:'eden',skin:'#f2e2d8',hair:'#15151d',hairTip:'#c9ccd8',coat:'#17171f',coat2:'#23232f',pants:'#101015',tail:'#17171f',
-      neon:'#5fd0ff',eye:'#a98bff',collar:'#23232f',glove:'#1a1a22'});
+      neon:'#4fc8ff',power:1,eye:'#a98bff',collar:'#23232f',glove:'#1a1a22'});
     equipPair(R,['sentia','sensus']);return R;},
 };
 AVATARS.nesis={
   name:'집행자 네시스',kind:'great',heavy:'slam',shadow:.45,
   build(){const R=humanoid({key:'nesis',skin:'#f4e6de',hair:'#eef2f8',streak:'#3b9dff',bun:1,hairLong:.36,coat:'#e9eef6',coat2:'#3b6fd8',pants:'#1d2333',
-      tail:'#dfe7f2',skirt:1,neon:'#9fdcff',eye:'#5fb8ff',sleeve:'#dfe6f0',glove:'#2b3550',boots:'#2b3550'});
+      tail:'#dfe7f2',skirt:1,neon:'#5ab8ff',power:1,eye:'#5fb8ff',sleeve:'#dfe6f0',glove:'#2b3550',boots:'#2b3550'});
     equipPair(R,['eruptio','klausroom']);return R;},
 };
 /* ================= 아군 (분노의 우니타스) ================= */
-AVATARS.rexor={name:'렉소르',kind:'chop',shadow:.5,
-  build(){const R=humanoid({key:'rexor',skin:'#e8cfc0',hair:'#3a1d18',coat:'#3a1f1c',coat2:'#ff6b5b',pants:'#1c1414',tail:'#3a1f1c',neon:'#ff6b5b',eye:'#ffb0a0',bulk:1.25,scale:1.08,plates:'#4a4f5a'});equip(R,'axe','R');return R;}};
-AVATARS.contusus={name:'콘투수스',kind:'chop',shadow:.42,
-  build(){const R=humanoid({key:'contusus',skin:'#ecd6c8',hair:'#5a2a1c',coat:'#33201c',coat2:'#ff8f6b',pants:'#1c1414',neon:'#ff8f6b',eye:'#ffc0a0'});equip(R,'blade','R');return R;}};
-AVATARS.tumultus={name:'투몰투스',kind:'spear',shadow:.42,
-  build(){const R=humanoid({key:'tumultus',skin:'#ead2c2',hair:'#2a1a16',coat:'#2e1d1a',coat2:'#ffa07a',pants:'#1c1414',tail:'#2e1d1a',neon:'#ffa07a',eye:'#ffc8a0'});equip(R,'spear','R');return R;}};
+AVATARS.rexor={name:'렉소르',kind:'chop',shadow:.5, // 붉은 긴 머리 · 검붉은 갑주 · 검은 망토
+  build(){const R=humanoid({key:'rexor',skin:'#f0d6cc',hair:'#9a1420',hairLong:.5,coat:'#16121a',coat2:'#3a1018',pants:'#2a1418',tail:'#120e14',neon:'#ff3a3a',eye:'#ff4a4a',bulk:1.08,scale:1.04,plates:'#24181e',boots:'#141018',glove:'#f0d6cc'});equip(R,'axe','R');return R;}};
+AVATARS.contusus={name:'콘투수스',kind:'chop',shadow:.42, // 검은 머리+붉은 끝 · 검은 코트(붉은 안감) · 장검
+  build(){const R=humanoid({key:'contusus',skin:'#ecd6c8',hair:'#121014',hairTip:'#8a1a28',hairLong:.42,coat:'#1c1a1f',coat2:'#5a1824',pants:'#1a161a',tail:'#1c1a1f',neon:'#c43a4a',eye:'#e8b060',collar:'#1c1a1f',glove:'#2a1a1c',boots:'#141216'});equip(R,'blade','R');return R;}};
+AVATARS.tumultus={name:'투몰투스',kind:'spear',shadow:.42, // 검붉은 머리 · 붉은 롱코트 · 검은 상의 · 갈색 부츠
+  build(){const R=humanoid({key:'tumultus',skin:'#f2dcd2',hair:'#141016',streak:'#d0203a',hairLong:.46,coat:'#7a1420',coat2:'#141216',pants:'#151316',tail:'#6a1420',neon:'#ff4a5a',eye:'#ff5a7a',sleeve:'#7a1420',glove:'#f2dcd2',boots:'#5a3a26'});equip(R,'spear','R');return R;}};
 /* ================= 관찰자 (컷신용) ================= */
 AVATARS.karo={name:'카로',kind:'cast',shadow:.4,build(){return humanoid({key:'karo',skin:'#1a1420',hair:'#0c0910',hairLong:.4,coat:'#120d18',pants:'#0a070d',tail:'#120d18',skirt:1,eye:'#d08cff'});}};
 AVATARS.osa={name:'오사',kind:'cast',shadow:.45,build(){return humanoid({key:'osa',skin:'#1a1420',hair:'#0c0910',coat:'#120d18',pants:'#0a070d',eye:'#b07cff',bulk:1.2,scale:1.1});}};
@@ -219,12 +229,18 @@ AVATARS.phasis={name:'파시스',kind:'cast',shadow:.6,
    설정 자료에 외형이 없어 무기 색을 입힌 반투명 인간형으로 임시 제작. 외형이 정해지면 build()만 교체. */
 function egoAvatar(key,o,wid,kind){return{name:WEAPONS[wid].name,kind,shadow:.4,ego:o.glow,
   build(){const R=humanoid(Object.assign({key,skin:'#f6f4ff',pants:'#20243a',eye:'#ffffff'},o));equip(R,wid,'R');return R;}};}
-AVATARS.ego_sentia=egoAvatar('ego_sentia',{hair:'#7fd8ff',hairLong:.3,coat:'#2a5f9a',coat2:'#59c8ff',neon:'#bff0ff',glow:'#59c8ff',scale:1.02},'sentia','dual');
-AVATARS.ego_sensus=egoAvatar('ego_sensus',{hair:'#d8b0ff',bun:1,coat:'#5a2f8a',coat2:'#c77dff',neon:'#f0d8ff',glow:'#c77dff',scale:.85},'sensus','dual');
-AVATARS.ego_klausroom=egoAvatar('ego_klausroom',{hair:'#ffffff',hairLong:.5,coat:'#d8dde6',coat2:'#f2f6ff',neon:'#ffffff',glow:'#e8f2ff',tail:'#e8ecf4',skirt:1,scale:1.08},'klausroom','dual');
-AVATARS.ego_eruptio=egoAvatar('ego_eruptio',{hair:'#3d7dff',coat:'#1d2c55',coat2:'#5aa9ff',neon:'#9fd0ff',glow:'#5aa9ff',bulk:1.2,scale:1.12},'eruptio','great');
+/* 일러스트(assets/img/chars) 색에 맞춘 에고 모습 */
+AVATARS.ego_sentia=egoAvatar('ego_sentia',{skin:'#f4ebe6',hair:'#d8dce4',hairLong:.5,coat:'#17171f',coat2:'#2a2a36',tail:'#17171f',skirt:1,pants:'#121218',neon:'#59c8ff',eye:'#9fb7d8',glow:'#59c8ff',scale:1.02},'sentia','dual');
+AVATARS.ego_sensus=egoAvatar('ego_sensus',{skin:'#f4ebe6',hair:'#e6e8ee',hairLong:.25,coat:'#1c1c24',coat2:'#9aa0aa',pants:'#e9d8cc',neon:'#c77dff',eye:'#b8a0d8',glow:'#c77dff',scale:.94},'sensus','dual');
+AVATARS.ego_klausroom=egoAvatar('ego_klausroom',{skin:'#f2e8e2',hair:'#b8bcc4',coat:'#121218',coat2:'#2a2a32',tail:'#121218',pants:'#101014',neon:'#e8f2ff',eye:'#c8d0dc',glow:'#e8f2ff',scale:1.04},'klausroom','dual');
+AVATARS.ego_eruptio=egoAvatar('ego_eruptio',{skin:'#f0e2da',hair:'#7a1f22',hairLong:.4,coat:'#16161c',coat2:'#c9a24a',tail:'#16161c',pants:'#121216',neon:'#7dff8a',eye:'#d8a040',glow:'#7dff8a',bulk:1.05,scale:1.06},'eruptio','great');
 
 /* 공통 진입점 */
+/* 권능 집중 — 이든·네시스: 권능의 에너지가 모이면 옷의 파란 선이 켜지고 맥박처럼 빛난다 */
+function setRigPower(R,on,t){
+  if(!R.pwCol)return;const k=on?.75+.45*Math.sin((t||0)*6):0;
+  for(const n of R.pw){n.vis=on;if(on){n.tint[0]=R.pwCol[0]*k+.15*k;n.tint[1]=R.pwCol[1]*k+.15*k;n.tint[2]=R.pwCol[2]*k+.15*k;}}
+}
 function makeAvatar(id){
   const d=AVATARS[id];const R=d.build();R.def=d;R.id=id;return R;
 }
