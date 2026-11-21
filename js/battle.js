@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.7.1
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.7.2
    js/battle.js — 전투 (3인칭 백뷰)
 
    게임 판정은 평면 좌표(px)로 계산하고, 그릴 때 S(=1/30)를 곱해 미터로 바꾼다.
@@ -468,16 +468,23 @@ function cutIn(file,side,label,col,small,dur){
   d.innerHTML='<img alt=""><b></b>';d.querySelector('img').src=imgSrc(file);d.querySelector('b').textContent=label||'';
   $('cutin').appendChild(d);setTimeout(()=>d.remove(),(dur||1.3)*1000+50);
 }
+/* 권능 문양 — 궁극기·링크 때 화면 가운데에서 회전하며 퍼진다 (이든 = 태초의 공허, 네시스 = 흡융) */
+function emblemPop(id,col,dur){
+  const it=IMAGES.icons[id];if(!it)return;const d=document.createElement('div');d.className='emb';
+  d.style.setProperty('--c',col||'#b48cff');if(dur)d.style.animationDuration=dur+'s';
+  d.innerHTML='<img alt="">';d.querySelector('img').src=imgSrc(it.file);$('cutin').appendChild(d);setTimeout(()=>d.remove(),(dur||1.2)*1000+50);
+}
 function addLink(v){P.link=Math.min(100,P.link+v);}
 /* ---------- 개인 궁극기 (R 짧게) ---------- */
 function addUlt(v){const k=P.active,was=P.ult[k];P.ult[k]=Math.min(100,P.ult[k]+v);
-  if(was<100&&P.ult[k]>=100){ftxt(P.x,P.y-30,'권능 집중','#7fd4ff',0,2.4);FX.burst(P.x*S,1.2,P.y*S,14,'#7fd4ff',3,.5,.06);}}
+  if(was<100&&P.ult[k]>=100){emblemPop(k==='eden'?'void':'fusion',k==='eden'?'#b48cff':'#9fdcff',.8);ftxt(P.x,P.y-30,'권능 집중','#7fd4ff',0,2.4);FX.burst(P.x*S,1.2,P.y*S,14,'#7fd4ff',3,.5,.06);}}
 /* 권능 집중 — 궁극기 게이지가 가득 찼거나 궁극기·링크 중일 때 옷의 파란 선이 빛난다 */
 function powerOn(k){return !!(P.ult[k]>=100||(B.ucine&&B.ucine.who===k)||B.cine||B.bigHalo);}
 function doUlt(){
   const k=P.active;P.ult[k]=0;if(B.tut)B.tut.ult++;
   B.ucine={who:k,t:0,dur:1.0,face:P.face};P.iT=Math.max(P.iT,1.6);setPose('cast',1);
   SFX.boss();flash(k==='eden'?'#b48cff':'#cfe9ff',.3);B.stats.ults=(B.stats.ults||0)+1;
+  emblemPop(k==='eden'?'void':'fusion',k==='eden'?'#b48cff':'#9fdcff',1.1);
   const ci=IMAGES.chars[k];cutIn(ci&&(ci.glow||ci.file),'L','',k==='eden'?'#b48cff':'#9fdcff',false,1.1);
   bark(k==='eden'?'이든':'네시스',k==='eden'?'공허여, 궤도를 펼쳐라.':'모두... 내게로 돌아와.');
 }
@@ -511,6 +518,7 @@ function doLink(){
   P.link=0;if(B.tut)B.tut.lk++;
   B.cine={t:0,dur:1.6,x:P.x,y:P.y,yaw:B.camYaw};
   SFX.link();flash('#c9b6ff',.35);
+  emblemPop('void','#b48cff',1.6);emblemPop('fusion','#9fdcff',1.6);
   cutIn(IMAGES.chars.eden.glow,'L','','#b48cff',false,1.6);cutIn(IMAGES.chars.nesis.glow,'R','','#9fdcff',false,1.6);
   B.haz=B.haz.filter(h=>h.fired);B.eb=[];B.stats.links=(B.stats.links||0)+1;
 }

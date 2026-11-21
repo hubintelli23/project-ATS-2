@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.7.1
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.7.2
    js/story.js — 등장인물, 대본, 대화 진행, 대화 장면(3D 무대)
 
    대본(RAW) 줄 형식
@@ -48,7 +48,7 @@ const SPK_IMG={'이든':'eden','네시스':'nesis','센티아':'sentia','센수�
   '에토스':'ethos','파토스':'pathos','뮤토스':'mythos','카이로스':'kairos','가우디움':'gaudium','액슐탄스':'exultance','엘라':'ella',
   '이라':'ira','파보르':'favor','루구스':'lugus','페스타디움':'festadium','푸로르':'furor','아르간트':'arrogant',
   '렉소르':'rexor','콘투수스':'contusus','투몰투스':'tumultus'};
-const SPK_FAC={'렉소르':'anger','콘투수스':'anger','투몰투스':'anger'};
+const SPK_FAC={'렉소르':'anger','콘투수스':'anger','투몰투스':'anger','이든':'void','네시스':'fusion'};
 for(const n in SPK_IMG)if(SPK[n])SPK[n].img=SPK_IMG[n];
 for(const n in SPK){const i=SPK[n].img&&IMAGES.chars[SPK[n].img];SPK[n].fac=(i&&i.faction)||SPK_FAC[n]||null;}
 /* 주인공 쪽(왼쪽에 서는 인물) */
@@ -63,6 +63,7 @@ const RAW={
 @cg fusion
 > '흡융의 탑' 최상층은 비명과도 같은 사슬 소리로 가득했다. 집행자 네시스는 증오에 미쳐 날뛰었고, 대행자 이든은 그녀의 목을 겨누는 대신 손을 뻗었다.
 > 그것은 처단이 아닌 포식이었다.
+@cg void
 > 이든의 권능 [태초의 공허]가 네시스를 좀먹던 저주와 업보를 통째로 삼켰다. 텅 빈 그릇이 된 그녀의 영혼에 죽은 리라의 용서가 깃들어, 새로운 신격의 씨앗이 맺혔다.
 @cg off
 @show eden_s1
