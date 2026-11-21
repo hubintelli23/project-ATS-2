@@ -139,10 +139,11 @@ assets/               ← 나중에 추가·교체할 요소 (분리된 파일)
   effects.js          이펙트 (베기 궤적, 충격파, 번개, 입자, 공격 예고 표시, 투사체, 피해 숫자)
   items.js            아이템 (에테르 결정, 링크 파편, 사념 정수)
   backgrounds.js      배경 (대화 장면 12종 + 전투 맵 4종, 방어막 발생기)
-  img/                로고, 대화창 초상화 (logo.webp, eden.jpg, nesis.jpg)
+  images.js           일러스트 목록 (인물 · 무기 · 문양) — 새 이미지는 여기 등록
+  img/                logo.webp + chars/ · weapons/ · icons/ 일러스트 (webp)
 ```
 
-불러오는 순서: `engine → weapons → avatars → effects → halos → items → backgrounds → core → story → battle → main`
+불러오는 순서: `engine → images → weapons → avatars → effects → halos → items → backgrounds → core → story → battle → main`
 
 ---
 
@@ -210,8 +211,18 @@ ITEMS.새아이디 = { name:'이름', desc:'설명', col:'#색', drop:.1,
 | `[sys] 문장` | 시스템 메시지 |
 | `!battle tut` | 전투 시작 (`tut`, `outpost`, `abimor`, `phasis`) |
 | `!end` | 체험판 종료 화면 |
+| `@power 이든 on` / `@power 이든 off` | 권능 집중 모습(파란 선)으로 바꾸기 / 되돌리기 (네시스도 같음) |
+| `@show 아이디` / `@hide` | 대사 없이 일러스트 세우기 (회상 등) / 모두 내리기 |
+| `@cg fusion` / `@cg off` | 화면 가득 일러스트 켜기 / 끄기 (`assets/images.js`의 아이디) |
 
 배경 아이디: `title`, `tower`, `forge`, `ark`, `chamber`, `plaza`, `unity`, `alert`, `outpost`, `cliff`, `moles`, `waste`, `phasis`
+
+### 일러스트 — `assets/images.js`
+
+1. 이미지를 `assets/img/chars/`(인물) · `weapons/` · `icons/`에 넣습니다 (webp 권장).
+2. `IMAGES.chars`에 `아이디:{file:'chars/파일.webp', name:'이름', sub:'설명'}` 한 줄 추가.
+3. 대사에 나오게 하려면 `js/story.js`의 `SPK_IMG`에 `'대사 속 이름':'아이디'` 추가.
+도감에는 자동으로 나타납니다.
 
 ### 수치 — `js/battle.js`
 
@@ -237,6 +248,8 @@ ITEMS.새아이디 = { name:'이름', desc:'설명', col:'#색', drop:.1,
 
 자세한 내용은 [`updates.json`](updates.json)을 보세요. 새 버전은 `updates` 배열 맨 앞에 추가하고 `current`를 바꿉니다.
 
+- **v0.7.1** — 감정의 우니타스 5팀 일러스트, 권능 집중 모드(파란 선), 누락 무기 6종, 시즌 1 대행자 회상, 이럽디오 녹염
+- **v0.7.0** — 신규 일러스트 88장, 스탠딩 일러스트 대화 · @cg 연출 · 도감 · 전투 컷인, 무기·에고 모양을 일러스트에 맞춤
 - **v0.6.1** — E 스킬이 손에 든 무기를 따라 바뀌도록 수정 (센수스 폭풍 돌진 · 클라우스룸 섬광 연참 추가)
 - **v0.6.0** — 개인 궁극기(R 짧게) 2종, 헤일로 문양(이든·네시스·공명) 파일 분리, 헤일로 보기, R 0.5초 홀딩 = 링크 0
 - **v0.5.0** — 무기 전환(X·휠), 에고 호출(Z) 4종, 무기별 공격

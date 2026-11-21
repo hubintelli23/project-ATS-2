@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.6.1
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.7.1
    js/story.js — 등장인물, 대본, 대화 진행, 대화 장면(3D 무대)
 
    대본(RAW) 줄 형식
@@ -13,12 +13,12 @@
    ================================================================== */
 /* ---------------- speakers ---------------- */
 const SPK={
-  '이든':{av:'eden',c:'#b49bff',img:'eden',full:'대행자 이든'},
-  '네시스':{av:'nesis',c:'#9fdcff',img:'nesis',full:'집행자 네시스'},
+  '이든':{av:'eden',c:'#b49bff',full:'대행자 이든'},
+  '네시스':{av:'nesis',c:'#9fdcff',full:'집행자 네시스'},
   '센티아':{c:'#59c8ff',e:'센',full:'센티아'},
   '센수스':{c:'#c77dff',e:'수',full:'센수스'},
   '클라우스룸':{c:'#eef3ff',e:'클',full:'클라우스룸'},
-  '이럽디오':{c:'#5aa9ff',e:'이',full:'이럽디오'},
+  '이럽디오':{c:'#4dff6a',e:'이',full:'이럽디오'},
   '에토스':{c:'#cfdcea',e:'E',full:'대 기록관 에토스'},
   '파토스':{c:'#a8c3dd',e:'P',full:'파토스'},
   '뮤토스':{c:'#a8c3dd',e:'M',full:'뮤토스'},
@@ -43,16 +43,32 @@ const SPK={
   '안식의 마을 주민':{c:'#b8b0a0',e:'民',full:'안식의 마을 주민'},
 };
 
+/* 대사 인물 ↔ 일러스트 (assets/images.js 의 chars 아이디) · 소속 감정 문양 */
+const SPK_IMG={'이든':'eden','네시스':'nesis','센티아':'sentia','센수스':'sensus','클라우스룸':'klausroom','이럽디오':'eruptio',
+  '에토스':'ethos','파토스':'pathos','뮤토스':'mythos','카이로스':'kairos','가우디움':'gaudium','액슐탄스':'exultance','엘라':'ella',
+  '이라':'ira','파보르':'favor','루구스':'lugus','페스타디움':'festadium','푸로르':'furor','아르간트':'arrogant',
+  '렉소르':'rexor','콘투수스':'contusus','투몰투스':'tumultus'};
+const SPK_FAC={'렉소르':'anger','콘투수스':'anger','투몰투스':'anger'};
+for(const n in SPK_IMG)if(SPK[n])SPK[n].img=SPK_IMG[n];
+for(const n in SPK){const i=SPK[n].img&&IMAGES.chars[SPK[n].img];SPK[n].fac=(i&&i.faction)||SPK_FAC[n]||null;}
+/* 주인공 쪽(왼쪽에 서는 인물) */
+const ILLUSTRATED=new Set(Object.values(SPK_IMG));
+const LEFT_SIDE=new Set(['eden','eden_s1','eden_s1_f','nesis','sentia','sensus','klausroom','eruptio']);
+
 /* ---------------- script ---------------- */
 const RAW={
 0:`#card 제 0막 프롤로그|침묵의 약속
 @bg tower
 > 1,000일 전, 모든 인과가 뒤바뀐 그날.
+@cg fusion
 > '흡융의 탑' 최상층은 비명과도 같은 사슬 소리로 가득했다. 집행자 네시스는 증오에 미쳐 날뛰었고, 대행자 이든은 그녀의 목을 겨누는 대신 손을 뻗었다.
 > 그것은 처단이 아닌 포식이었다.
 > 이든의 권능 [태초의 공허]가 네시스를 좀먹던 저주와 업보를 통째로 삼켰다. 텅 빈 그릇이 된 그녀의 영혼에 죽은 리라의 용서가 깃들어, 새로운 신격의 씨앗이 맺혔다.
+@cg off
+@show eden_s1
 > 이든은 그 신격을 봉인하고, 그날의 진실을 그녀의 기억에서 지운 채 평범한 소녀로서의 삶을 선물하려 했다.
 > 하지만 이든은 몰랐다. 네시스가 단 한 순간도 잊지 않았음에도, 그가 바란 '평범한 소녀'를 연기하며 침묵을 선택했다는 것을.
+@hide
 @bg forge
 > 공허와 흡융의 대 전쟁이 끝난 지 정확히 3년. 잿빛 폐허 위로, 하늘을 뒤덮은 공허의 게이트가 차가운 빛의 가루를 소리 없이 흩뿌린다.
 > 스테일 마을의 낡은 대장간. 대행자 이든은 1,000일이 넘는 시간 동안 이곳을 지켰다. 그는 신의 권능을 가진 채, 가장 인간답게 이 잿빛 시간을 견뎌왔다.
@@ -173,6 +189,7 @@ const RAW={
 이든: 렉소르, 콘투수스, 투몰투스! 너희는 모르를 맡아라! 네시스, 아비는 우리가 상대한다!
 아비: 날 상대하겠다고? 귀여워라. 그럼 그 눈이 공포로 물드는 과정을 지켜봐 줄게!
 !battle abimor
+@power 이든 on
 [sys] 시스템 경보: 하급 피조물 '아비'의 정수를 흡수합니다.
 [sys] 권능 '강림의 초석: 끝없는 심연'의 파편을 포식합니다.
 [sys] 시스템 경보: 하급 피조물 '모르'의 정수를 흡수합니다.
@@ -187,6 +204,7 @@ const RAW={
 이럽디오: ...주인의 길을 막는다면, 그게 초석이라 해도 녹여버릴 뿐이다. 간다, 네시스!
 파시스: 가소롭구나. 너희의 그 보잘것없는 의지가 얼마나 허망하게 무너질지... 내 요람의 양분이 되어 깨닫게 해주마!
 !battle phasis
+@power 이든 off
 > 파시스의 육체가 고철 가루가 되어 흩어지는 와중에도, 그녀의 보랏빛 눈동자만큼은 끈질기게 이든과 네시스를 응시하고 있었다.
 파시스: 아하하... 대행자 이든, 그리고 네시스... 너희가 거둔 이 하찮은 승리가 어떤 파멸을 불러올지, 아직도 모르는구나.
 파시스: 착각하지 마라. 나의 소멸은 끝이 아니다. 만물을 창조하시는 나의 신, 테흠께서 네놈들이 게이트를 욕되게 한 죄를 결코 잊지 않으실 테니까.
@@ -195,6 +213,7 @@ const RAW={
 센티아: 이든, 센수스의 말이 맞아! 이 결정 안에서 아주 미세하고 규칙적인 파동이 발신되고 있어. 이건... 일종의 '좌표 신호'야!
 클라우스룸: 네시스여, 경계하십시오! 사자가 죽어 남긴 결정은 동족들을 부르는 등불입니다. 이계의 다른 초석들... 어쩌면 현계의 초석들까지 이 힘을 감지했을 것입니다.
 네시스: 우리가... 양쪽 모두에게 표적이 됐다는 뜻인가요? 우린 그저 지키기 위해 싸운 것뿐인데...
+@power 이든 on
 > 이든은 결정을 손바닥 위에 올렸다. 날뛰던 파동이 공허 속에서 억눌리며, 점멸 속도가 눈에 띄게 줄어들었다.
 이든: 완전히 지울 수는 없군. 하지만 적어도 실시간 위치 추적은 막아두었다. 이제부터 이놈은 우리를 사냥하는 미끼가 아니다.
 !end`
@@ -208,6 +227,10 @@ function parseScript(src){
   return src.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
     if(l.startsWith('#card ')){const[a,b]=l.slice(6).split('|');return{t:'card',n:a,x:b};}
     if(l.startsWith('@bg '))return{t:'bg',bg:l.slice(4).trim()};
+    if(l.startsWith('@cg '))return{t:'cg',k:l.slice(4).trim()};
+    if(l.startsWith('@show '))return{t:'show',k:l.slice(6).trim()};
+    if(l==='@hide')return{t:'hide'};
+    if(l.startsWith('@power ')){const a=l.slice(7).trim().split(/\s+/);return{t:'power',who:a[0],on:a[1]!=='off'};}
     if(l.startsWith('!battle '))return{t:'battle',id:l.slice(8).trim()};
     if(l==='!end')return{t:'end'};
     if(l.startsWith('> '))return{t:'nar',x:l.slice(2)};
@@ -222,7 +245,7 @@ const SCRIPT={};for(const k in RAW)SCRIPT[k]=parseScript(RAW[k]);
 /* ---------------- runner ---------------- */
 const run={ch:0,i:0};
 let D={full:'',shown:0,typing:false,auto:false,autoT:0,step:null};
-function startChapter(n){
+function startChapter(n){for(const k in POWER)delete POWER[k];
   run.ch=n;run.i=0;
   show('title',false);show('chap',false);show('fin',false);
   nextStep();
@@ -235,8 +258,12 @@ function nextStep(){
     if(SCRIPT[run.ch+1])startChapter(run.ch+1);else finish();
     return;
   }
-  if(st.t==='bg'){GS.bg=st.bg;GS.bgT=0;return nextStep();}
-  if(st.t==='card'){showCard(st);return;}
+  if(st.t==='bg'){GS.bg=st.bg;GS.bgT=0;standClear();setCG('off');return nextStep();}
+  if(st.t==='cg'){setCG(st.k);return nextStep();}
+  if(st.t==='power'){setPower(st.who,st.on);return nextStep();}
+  if(st.t==='show'){standShow(st.k);standDim();return nextStep();}
+  if(st.t==='hide'){standClear();return nextStep();}
+  if(st.t==='card'){standClear();setCG('off');showCard(st);return;}
   if(st.t==='battle'){hideDialog();startBattle(st.id);return;}
   if(st.t==='end'){hideDialog();finish();return;}
   showLine(st);
@@ -252,20 +279,52 @@ function showCard(st){
 }
 function showLine(st){
   GS.mode='dialog';D.step=st;
-  show('dlg',true);show('dlgbar',true);masterRefresh();
+  show('dlg',true);show('dlgbar',true);show('stand',true);masterRefresh();
   const dl=$('dlg');dl.classList.toggle('nar',st.t==='nar');dl.classList.toggle('sys',st.t==='sys');
-  const por=$('dPor');por.innerHTML='';
+  const por=$('dPor');por.innerHTML='';por.style.display='none';
   if(st.t==='say'){
     const s=SPK[st.n]||{c:'#ddd',e:st.n[0],full:st.n};
-    $('dNm').textContent=s.full;$('dNm').style.color=s.c;
-    if(s.img){const im=document.createElement('img');im.src='assets/img/'+s.img+'.jpg';im.alt=s.full;por.appendChild(im);}
-    else{const e=document.createElement('div');e.className='emb';e.style.color=s.c;e.textContent=s.e||st.n[0];por.appendChild(e);}
-    por.style.display='';
-  }else{$('dNm').textContent=st.t==='sys'?'SYSTEM':'';$('dNm').style.color='#8fd8ff';por.style.display='none';}
+    $('dNm').innerHTML='';
+    if(s.fac){const f=document.createElement('img');f.className='fac';f.src=imgSrc(IMAGES.icons[s.fac].file);f.alt='';$('dNm').appendChild(f);}
+    $('dNm').appendChild(document.createTextNode(s.full));$('dNm').style.color=s.c;
+    if(s.img)standShow(s.img);                       // 전신 일러스트
+    else{standDim();const e=document.createElement('div');e.className='emb';e.style.color=s.c;e.textContent=s.e||st.n[0];por.appendChild(e);por.style.display='';}
+  }else{$('dNm').textContent=st.t==='sys'?'SYSTEM':'';$('dNm').style.color='#8fd8ff';standDim();}
   D.full=st.x;D.shown=0;D.typing=true;D.autoT=0;$('dTx').textContent='';
   STAGE.speaker=st.t==='say'?(SPK[st.n]&&SPK[st.n].av)||null:null;
 }
-function hideDialog(){show('dlg',false);show('dlgbar',false);}
+function hideDialog(){show('dlg',false);show('dlgbar',false);show('stand',false);show('cg',false);}
+/* ---------------- 일러스트 대화 (비주얼 노벨식) ----------------
+   말하는 인물의 전신 일러스트가 좌우에 선다. 말하는 사람은 밝게, 나머지는 어둡게. */
+const ST={L:null,R:null,last:null};
+function standShow(id){
+  show('stand',true);
+  let side=ST.L===id?'L':ST.R===id?'R':null;
+  if(!side){
+    const pref=LEFT_SIDE.has(id)?'L':'R',other=pref==='L'?'R':'L';
+    side=(ST[pref]&&ST[pref]===ST.lastId)?other:pref;
+    ST[side]=id;const el=$('st'+side),im=el.querySelector('img');
+    im.src=imgSrc(standFile(id));im.alt=IMAGES.chars[id].name;el.classList.toggle('pw',!!POWER[id]);el.classList.remove('in');void el.offsetWidth;el.classList.add('in');el.classList.remove('hide');
+  }
+  $('stL').classList.toggle('act',side==='L');$('stR').classList.toggle('act',side==='R');ST.lastId=id;
+}
+/* @show 아이디 : 대사 없이 일러스트만 세우기(회상 등), @hide : 모두 내리기
+   권능 집중 모드 — 권능의 에너지가 모이면 옷에 파란 선이 빛나는 모습(glow 이미지)으로 바뀐다
+   대본: @power 이든 on / @power 이든 off  (네시스도 같음) */
+const POWER={};
+function standFile(id){const it=IMAGES.chars[id];return POWER[id]&&it.glow?it.glow:it.file;}
+function setPower(who,on){
+  const id=(SPK[who]&&SPK[who].img)||who;POWER[id]=on;
+  for(const sd of ['L','R'])if(ST[sd]===id){const el=$('st'+sd);el.querySelector('img').src=imgSrc(standFile(id));el.classList.toggle('pw',on);if(on){el.classList.remove('pin');void el.offsetWidth;el.classList.add('pin');}}
+}
+function standDim(){$('stL').classList.remove('act');$('stR').classList.remove('act');}
+function standClear(){ST.L=ST.R=ST.lastId=null;for(const s of ['stL','stR']){$(s).classList.add('hide');$(s).classList.remove('act');}}
+/* @cg 아이디 : 화면 가운데 큰 그림 (인물·무기·문양 아이디 또는 파일 경로), @cg off : 끄기 */
+function setCG(k){
+  const el=$('cg');if(!k||k==='off'){el.classList.add('hide');return;}
+  const it=IMAGES.icons[k]||IMAGES.chars[k]||IMAGES.weapons[k];
+  el.querySelector('img').src=it?imgSrc(it.file):imgSrc(k);el.classList.remove('hide');el.classList.remove('in');void el.offsetWidth;el.classList.add('in');
+}
 /* ---------------- 마스터 모드 ---------------- */
 function chapterSkip(){ // 남은 막 전체(전투 포함) 건너뛰기
   if(run.ch+1>SAVE.unlocked){SAVE.unlocked=run.ch+1;persist();}
@@ -325,7 +384,10 @@ function dlgUpdate(dt){
 function skipToAction(){
   const list=SCRIPT[run.ch];
   while(run.i<list.length){const st=list[run.i];
-    if(st.t==='bg'){GS.bg=st.bg;run.i++;continue;}
+    if(st.t==='bg'){GS.bg=st.bg;standClear();setCG('off');run.i++;continue;}
+    if(st.t==='cg'){setCG(st.k);run.i++;continue;}
+    if(st.t==='power'){setPower(st.who,st.on);run.i++;continue;}
+    if(st.t==='show'||st.t==='hide'){run.i++;continue;}
     if(st.t==='say'||st.t==='nar'||st.t==='sys'){run.i++;continue;}
     break;}
   nextStep();
@@ -350,7 +412,7 @@ function buildChap(){
     b.onclick=()=>{SFX.ui();startChapter(i);};L.appendChild(b);});
 }
 function toTitle(){
-  ['fin','pause','over','result','hud','ctrl','pauseB','chap','card','map','interact','master','bWin','mBadge'].forEach(i=>show(i,false));GS.map=false;hideDialog();releaseLock();
+  ['fin','pause','over','result','hud','ctrl','pauseB','chap','card','map','interact','master','bWin','mBadge','stand','cg','gallery'].forEach(i=>show(i,false));standClear();GS.map=false;hideDialog();releaseLock();
   B=null;GS.mode='title';GS.bg='title';GS.paused=false;show('title',true);FX.clear();
 }
 
@@ -377,6 +439,7 @@ const STAGE={key:null,env:null,cfg:null,cast:[],rigs:{},speaker:null,t:0,W:40,
     drawSky(this.key,this.cfg);
     this.env.draw(t);
     for(const c of this.cast){
+      if(GS.mode==='dialog'&&ILLUSTRATED.has(c.id))continue; // 일러스트로 나오는 인물은 3D 모델 생략
       const talking=this.speaker===c.id;
       animateAvatar(c.rig,{t:t+c.x,move:0,pose:null});
       if(talking){c.rig.head.r[0]+=Math.sin(t*9)*.05;}
@@ -389,3 +452,21 @@ const STAGE={key:null,env:null,cfg:null,cast:[],rigs:{},speaker:null,t:0,W:40,
     R3.end();
   },
 };
+
+/* ---------------- 도감 (인물 · 무기 · 문양) ---------------- */
+let galTab='chars';
+function buildGallery(){
+  const G=$('gGrid');G.innerHTML='';
+  for(const id in IMAGES[galTab]){const it=IMAGES[galTab][id],d=document.createElement('div');d.className='gi';
+    d.innerHTML=`<img loading="lazy" alt=""><span></span><small></small>`;d.querySelector('img').src=imgSrc(it.file);
+    d.querySelector('span').textContent=it.name;d.querySelector('small').textContent=it.sub||'';
+    d.onclick=()=>{const v=$('gView'),b=$('gvPw');let pw=false;
+      const upd=()=>{v.querySelector('img').src=imgSrc(pw?it.glow:it.file);v.querySelector('.gvn').textContent=it.name+(it.sub?' · '+it.sub:'')+(pw?' · 권능 집중':'');b.classList.toggle('on',pw);};
+      b.classList.toggle('hide',!it.glow);b.onclick=e=>{e.stopPropagation();SFX.ui();pw=!pw;upd();};upd();v.classList.remove('hide');};
+    G.appendChild(d);}
+  document.querySelectorAll('.gtabs .sbtn').forEach(b=>b.classList.toggle('on',b.dataset.g===galTab));
+}
+document.querySelectorAll('.gtabs .sbtn').forEach(b=>b.onclick=()=>{SFX.ui();galTab=b.dataset.g;buildGallery();});
+$('mGal').onclick=()=>{audioInit();SFX.ui();buildGallery();show('gallery',true);};
+$('gClose').onclick=()=>{SFX.ui();show('gallery',false);};
+$('gView').onclick=()=>$('gView').classList.add('hide');

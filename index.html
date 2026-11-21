@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.6.1 · 3D -->
+<!-- 액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.7.1 · 3D -->
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#07060d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<title>액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판 v0.6.1)</title>
+<title>액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판 v0.7.1)</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -20,6 +20,7 @@
     <div class="menu">
       <button class="btn" id="mNew">처음부터</button>
       <button class="btn" id="mChap">막 선택</button>
+      <button class="btn" id="mGal">도감</button>
       <button class="btn master" id="mMaster">마스터 모드</button>
     </div>
     <div class="hint" id="tHint">PC: 키보드 + 마우스 · 휴대폰: 가로 화면 터치 · 이어폰을 추천해요</div>
@@ -34,6 +35,8 @@
 
   <div id="card" class="hide"><div class="n" id="cardN"></div><div class="t" id="cardT"></div><div class="line"></div></div>
 
+  <div id="cg" class="hide"><img alt=""></div>
+  <div id="stand" class="hide"><div class="st hide" id="stL"><img alt=""></div><div class="st hide" id="stR"><img alt=""></div></div>
   <div id="dlg" class="hide">
     <div class="por" id="dPor"></div>
     <div class="box"><div class="nm" id="dNm"></div><div class="tx" id="dTx"></div><div class="nx">▼</div></div>
@@ -151,6 +154,14 @@
     <div class="hvl"><div><b style="color:#c9a0ff">이든의 헤일로</b><span>분열된 궤도형 + 공허의 중심형 · 고리 5</span></div><div><b style="color:#f0e6ff">공명 헤일로</b><span>공허 중심 + 융합 고리 + 파편 궤도 · 고리 7</span></div><div><b style="color:#9fdcff">네시스의 헤일로</b><span>수렴 나선형 + 융합 고리형 · 고리 5</span></div></div>
     <button class="btn" id="hvClose">닫기</button>
   </div>
+  <div id="cutin"></div>
+  <div id="gallery" class="ov hide">
+    <h2>도감</h2>
+    <div class="gtabs"><button class="sbtn on" data-g="chars">인물</button><button class="sbtn" data-g="weapons">무기</button><button class="sbtn" data-g="icons">문양</button></div>
+    <div class="ggrid" id="gGrid"></div>
+    <button class="sbtn" id="gClose">닫기</button>
+    <div id="gView" class="hide"><img alt=""><div class="gvn"></div><button id="gvPw" class="sbtn hide">권능 집중 모습</button></div>
+  </div>
   <div id="toast"></div>
   <div id="flash"></div>
 </div>
@@ -158,7 +169,8 @@
 
 <!-- 1) 엔진 -->
 <script src="js/engine.js"></script>
-<!-- 2) 분리 에셋: 무기 아티팩트 → 아바타 캐릭터 → 이펙트 → 헤일로 → 아이템 → 배경 -->
+<!-- 2) 분리 에셋: 이미지 목록 → 무기 아티팩트 → 아바타 캐릭터 → 이펙트 → 헤일로 → 아이템 → 배경 -->
+<script src="assets/images.js"></script>
 <script src="assets/weapons.js"></script>
 <script src="assets/avatars.js"></script>
 <script src="assets/effects.js"></script>

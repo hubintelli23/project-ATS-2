@@ -1,4 +1,4 @@
-/* 액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.6.1  · css/style.css */
+/* 액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.7.1  · css/style.css */
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 html,body{margin:0;height:100%;background:#07060d;overflow:hidden;color:#e9e6f5;
@@ -149,7 +149,7 @@ body:not(.touch) #ctrl{display:none!important}
 
 #nogl{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;background:#07060d;color:#e9e6f5;font-size:15px;line-height:1.7;z-index:9}
 
-/* ================= v0.6.1 — PC / 모바일 겸용 ================= */
+/* ================= v0.7.1 — PC / 모바일 겸용 ================= */
 .key{display:inline-block;min-width:18px;padding:1px 6px;margin:0 2px;border:1px solid rgba(200,185,255,.55);border-radius:5px;background:rgba(20,14,40,.85);font-size:11px;font-weight:800;color:#efeaff;text-align:center;line-height:16px}
 body.touch .pconly{display:none!important}
 #mini{position:absolute;inset:auto;border-radius:10px;border:1px solid rgba(160,140,255,.4)}
@@ -188,7 +188,7 @@ body.pc #combo{top:30%}
 #pchint{position:absolute;right:max(20px,env(safe-area-inset-right));bottom:124px;text-align:right;font-size:11.5px;color:#cfc6ee;line-height:2;text-shadow:0 0 6px #000}
 #pchint b{color:#9fe2ff}
 
-/* ================= v0.6.1 — 마스터 모드 ================= */
+/* ================= v0.7.1 — 마스터 모드 ================= */
 .btn.master{border-color:rgba(255,200,120,.55);color:#ffe2b0}
 #master{z-index:6;gap:10px;background:rgba(4,3,10,.95)}
 #master .mgrid{display:grid;grid-template-columns:repeat(2,minmax(150px,240px));gap:8px}
@@ -207,7 +207,7 @@ body.touch #bWin{top:calc(max(8px,env(safe-area-inset-top)) + 128px)}
 #toast{position:absolute;left:50%;top:14%;transform:translateX(-50%);background:rgba(40,26,6,.9);border:1px solid rgba(255,210,122,.7);color:#ffe8bf;font-weight:800;letter-spacing:.08em;padding:9px 18px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .25s;pointer-events:none!important;z-index:8}
 #toast.on{opacity:1}
 
-/* ================= v0.6.1 — 무기 전환 · 호출 ================= */
+/* ================= v0.7.1 — 무기 전환 · 호출 ================= */
 #bSwap{width:46px;height:46px;right:226px;bottom:6px;border-color:rgba(160,220,255,.6)}
 #bSwap span{font-size:10px}
 #bCall{width:50px;height:50px;right:216px;bottom:66px;border-color:rgba(160,220,255,.6)}
@@ -215,7 +215,7 @@ body.touch #bWin{top:calc(max(8px,env(safe-area-inset-top)) + 128px)}
 #btns{width:280px}
 .ks .ksl{font-size:9px;color:#a9a2c9}
 
-/* ================= v0.6.1 — 개인 궁극기 · 헤일로 ================= */
+/* ================= v0.7.1 — 개인 궁극기 · 헤일로 ================= */
 #ul i{background:linear-gradient(90deg,#b07a2a,#ffd27a)}
 #ul.full i{animation:lkp .6s infinite alternate}
 .ks .ksl2{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10px;color:#c9b6ff}
@@ -230,3 +230,43 @@ body.touch #bWin{top:calc(max(8px,env(safe-area-inset-top)) + 128px)}
 #haloV .hvl div{text-align:center;background:rgba(6,4,14,.7);padding:6px 10px;border-radius:10px;font-size:12px;max-width:32%}
 #haloV .hvl b{display:block;font-size:14px}#haloV .hvl span{color:#bdb5e0}
 #haloV .btn{pointer-events:auto}
+
+/* ================= v0.7.1 — 일러스트 컷신 · 도감 ================= */
+#stand{position:absolute;inset:0;pointer-events:none!important}
+#stand .st{position:absolute;bottom:0;height:min(96vh,1150px);display:flex;align-items:flex-end;pointer-events:none}
+#stand .st img{height:100%;width:auto;object-fit:contain;filter:brightness(.42) saturate(.8);transition:filter .25s,transform .25s;transform-origin:bottom center}
+#stand .st.act img{filter:brightness(1) drop-shadow(0 0 18px rgba(160,130,255,.35));transform:translateY(-6px) scale(1.02)}
+#stand #stL{left:max(2%,calc(50% - 560px))}
+#stand #stR{right:max(2%,calc(50% - 560px))}
+#stand .st.in{animation:stin .35s ease-out}
+@keyframes stin{from{opacity:0;transform:translateY(20px)}}
+@media (max-aspect-ratio:1/1){#stand .st{height:64vh}#stand #stL{left:-4%}#stand #stR{right:-4%}}
+#cg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none!important;background:radial-gradient(ellipse at center,rgba(10,6,24,.35),rgba(3,2,8,.75))}
+#cg img{max-width:min(70vw,760px);max-height:62vh;object-fit:contain;filter:drop-shadow(0 0 30px rgba(160,120,255,.5));margin-bottom:18vh}
+#cg.in{animation:cgin .6s ease-out}@keyframes cgin{from{opacity:0}}
+#dNm .fac{height:1.4em;vertical-align:-.35em;margin-right:6px}
+#cutin{position:absolute;inset:0;pointer-events:none!important;overflow:hidden;z-index:3}
+#cutin .ci{position:absolute;bottom:0;height:min(78vh,820px);animation:ciin 1.3s ease-out forwards}
+#cutin .ci img{height:100%;filter:drop-shadow(0 0 24px var(--c,#b48cff))}
+#cutin .ci b{position:absolute;bottom:18%;white-space:nowrap;font-size:clamp(16px,3vmin,26px);font-weight:900;color:#fff;text-shadow:0 0 12px var(--c,#b48cff),0 2px 4px #000}
+#cutin .ci.L{left:2%}#cutin .ci.L b{left:60%}
+#cutin .ci.R{right:2%}#cutin .ci.R b{right:60%}
+@keyframes ciin{0%{opacity:0;transform:translateX(var(--dx,-60px))}15%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0}}
+#cutin .ci.small{height:min(46vh,440px)}
+.ks .ic,.cb .ic{position:absolute;inset:4px;background:center/contain no-repeat;opacity:.38;pointer-events:none}
+#gallery{z-index:6;background:rgba(4,3,10,.96);justify-content:flex-start;padding-top:24px}
+.gtabs{display:flex;gap:8px}.gtabs .sbtn.on{background:rgba(110,80,220,.6)}
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;width:min(94vw,1100px);overflow-y:auto;flex:1;padding:6px}
+.gi{cursor:pointer;background:rgba(20,14,40,.8);border:1px solid rgba(160,140,255,.25);border-radius:10px;padding:6px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.gi img{height:120px;max-width:100%;object-fit:contain}.gi span{font-size:12px;text-align:center;color:#ddd5ff}.gi small{font-size:10px;color:#9d95c2}
+#gView{position:fixed;inset:0;background:rgba(3,2,8,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer}
+#gView img{max-width:92vw;max-height:80vh;object-fit:contain}.gvn{font-weight:800;color:#efeaff}
+
+/* ===== v0.7.1 권능 집중 모드 ===== */
+#stand .st.pw.act img{filter:brightness(1.05) drop-shadow(0 0 14px rgba(90,190,255,.75)) drop-shadow(0 0 34px rgba(90,160,255,.45))}
+#stand .st.pin img{animation:pwin .7s ease-out}
+@keyframes pwin{0%{filter:brightness(2.2) drop-shadow(0 0 40px #7fd4ff)}100%{}}
+#gvPw{margin-top:4px}#gvPw.on{background:#2d6fd8;border-color:#7fd4ff;color:#fff}
+@keyframes pwblink{50%{opacity:.55}}
+.pt.pw b::after{content:'권능 집중';margin-left:6px;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:800;color:#dff4ff;background:rgba(60,150,255,.35);border:1px solid #7fd4ff;animation:pwblink 1.2s ease-in-out infinite}
+.pt.pw{box-shadow:0 0 12px rgba(90,180,255,.45)}
