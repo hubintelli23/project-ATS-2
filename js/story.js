@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.7.2
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.8.0
    js/story.js — 등장인물, 대본, 대화 진행, 대화 장면(3D 무대)
 
    대본(RAW) 줄 형식
@@ -336,6 +336,7 @@ function jumpToBattle(id){ // 대본에서 그 전투 위치를 찾아 바로 �
     run.ch=+ch;run.i=i+1;for(let k=i;k>=0;k--)if(L[k].t==='bg'){GS.bg=L[k].bg;break;}
     ['title','chap','fin','master','pause','result','over'].forEach(x=>show(x,false));GS.paused=false;
     startBattle(id);return;}
+  if(BATTLES[id]){['title','chap','fin','master','pause','result','over'].forEach(x=>show(x,false));GS.paused=false;startBattle(id);} // 대본 밖 시험 전투
 }
 const BATTLE_NAMES={tut:'1막 · 에테르 챔버 튜토리얼',outpost:'2막 · 제1 전초기지 방어전',abimor:'2막 · 아비 & 모르',phasis:'2막 · 파시스'};
 function masterUI(){
@@ -413,7 +414,7 @@ function buildChap(){
     b.onclick=()=>{SFX.ui();startChapter(i);};L.appendChild(b);});
 }
 function toTitle(){
-  ['fin','pause','over','result','hud','ctrl','pauseB','chap','card','map','interact','master','bWin','mBadge','stand','cg','gallery'].forEach(i=>show(i,false));standClear();GS.map=false;hideDialog();releaseLock();
+  ['fin','pause','over','result','hud','ctrl','pauseB','chap','card','map','interact','master','bWin','mBadge','stand','cg','gallery','bossSel','db'].forEach(i=>show(i,false));standClear();GS.map=false;hideDialog();releaseLock();
   B=null;GS.mode='title';GS.bg='title';GS.paused=false;show('title',true);FX.clear();
 }
 

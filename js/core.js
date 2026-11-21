@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.7.2
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.8.0
    js/core.js — 화면 크기, 저장, 효과음, 입력(통일 조작 체계)
 
    통일 조작 체계 (PC)
@@ -11,7 +11,7 @@
    마스터 모드: F2 또는 ` 키로 켜기/끄기
    ================================================================== */
 'use strict';
-const VERSION='v0.7.2';
+const VERSION='v0.8.0';
 const $=id=>document.getElementById(id);
 const PI=Math.PI,TAU=PI*2;
 const rand=(a,b)=>a+Math.random()*(b-a);
@@ -113,6 +113,7 @@ window.addEventListener('keydown',e=>{
   if(e.code==='Tab'||(e.code==='Space'&&GS.mode==='battle'))e.preventDefault();
   if(e.repeat)return;
   keys[e.code]=true;autoUI('pc');
+  if(e.code==='KeyF'&&B&&B.db&&GS.mode==='battle'&&!GS.paused)dbPress(); // 즉사기 파훼는 프레임과 상관없이 바로 판정
   const a=KEYACT[e.code];
   if(a&&GS.mode==='battle'&&!GS.paused&&!GS.map){inp[a+'P']=true;e.preventDefault();}
   if(e.code==='KeyR'&&GS.mode==='battle'&&!GS.paused){inp.rDown=true;inp.rPress=true;inp.rT0=performance.now();}
@@ -175,7 +176,7 @@ applyUISetting();
 document.querySelectorAll('.cb').forEach(el=>{
   const a=el.dataset.a;
   el.addEventListener('pointerdown',e=>{audioInit();useTouch();el.setPointerCapture(e.pointerId);el.classList.add('press');
-    if(a==='atk'){inp.atkDown=true;inp.atkPress=true;inp.atkT0=performance.now();inp.atkCtrl=false;}else if(a==='r'){inp.rDown=true;inp.rPress=true;inp.rT0=performance.now();}else inp[a+'P']=true;e.preventDefault();e.stopPropagation();});
+    if(a==='atk'){inp.atkDown=true;inp.atkPress=true;inp.atkT0=performance.now();inp.atkCtrl=false;}else if(a==='r'){inp.rDown=true;inp.rPress=true;inp.rT0=performance.now();}else inp[a+'P']=true;if(a==='f'&&B&&B.db)dbPress();e.preventDefault();e.stopPropagation();});
   const up=()=>{if(!el.classList.contains('press'))return;el.classList.remove('press');if(a==='atk'&&inp.atkDown){inp.atkDown=false;inp.atkRel=true;}if(a==='r'&&inp.rDown){inp.rDown=false;inp.rRel=true;}};
   el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);el.addEventListener('lostpointercapture',up);
 });

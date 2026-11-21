@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.7.2 · 3D -->
+<!-- 액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.8.0 · 3D -->
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#07060d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<title>액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판 v0.7.2)</title>
+<title>액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판 v0.8.0)</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -20,6 +20,7 @@
     <div class="menu">
       <button class="btn" id="mNew">처음부터</button>
       <button class="btn" id="mChap">막 선택</button>
+      <button class="btn" id="mBoss">최상위 보스전</button>
       <button class="btn" id="mGal">도감</button>
       <button class="btn master" id="mMaster">마스터 모드</button>
     </div>
@@ -51,6 +52,7 @@
       <div class="pname"><span style="color:#c9b6ff;font-weight:800">LINK 0</span><span id="lkT">0%</span></div><div class="bar" id="lk"><i></i></div>
     </div>
     <div id="boss"></div>
+    <div id="db" class="hide"><div class="dbn"></div><div class="dbbar"><i class="dbw"></i><i class="dbp"></i></div><div class="dbh"></div></div>
     <div id="obj"></div>
     <div id="banner"></div>
     <div id="barks"></div>
@@ -155,6 +157,7 @@
     <button class="btn" id="hvClose">닫기</button>
   </div>
   <div id="cutin"></div>
+  <div id="bossSel" class="ov hide"><div class="ovbox"><h2>최상위 보스전</h2><p class="bsd">신들의 화신체 · 즉사기 파훼 시험 (본편 33~34막 미리보기)</p><div id="bsList"></div><button class="sbtn" id="bsClose">닫기</button></div></div>
   <div id="gallery" class="ov hide">
     <h2>도감</h2>
     <div class="gtabs"><button class="sbtn on" data-g="chars">인물</button><button class="sbtn" data-g="weapons">무기</button><button class="sbtn" data-g="icons">문양</button></div>
@@ -181,6 +184,7 @@
 <script src="js/core.js"></script>
 <script src="js/story.js"></script>
 <script src="js/battle.js"></script>
+<script src="js/bosses.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

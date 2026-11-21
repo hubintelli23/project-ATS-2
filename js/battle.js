@@ -1,5 +1,5 @@
 /* ==================================================================
-   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.7.2
+   액팅 소울 : 0 — 신들의 종언 (시즌 2 체험판)  v0.8.0
    js/battle.js — 전투 (3인칭 백뷰)
 
    게임 판정은 평면 좌표(px)로 계산하고, 그릴 때 S(=1/30)를 곱해 미터로 바꾼다.
@@ -64,7 +64,7 @@ function startBattle(id){
   const def=BATTLES[id];
   B={id,def,w:def.w,h:def.h,t:0,en:[],haz:[],eb:[],pb:[],fields:[],allies:[],ghosts:[],items:[],egos:[],egoRig:{},egoW:{},bigHalo:null,ucine:null,nearItem:null,core:null,
      wave:-1,spawnQ:[],spawnT:0,shake:0,hitstop:0,slow:0,slowS:1,
-     combo:0,comboT:0,stats:{time:0,taken:0,maxCombo:0,perfect:0},barked:{},tut:null,over:false,winT:-1,cine:null,linkInv:0,bossIds:[],
+     combo:0,comboT:0,stats:{time:0,taken:0,maxCombo:0,perfect:0,counters:0},db:null,barked:{},tut:null,over:false,winT:-1,cine:null,linkInv:0,bossIds:[],
      camYaw:-PI/2,camPitch:.3,camDist:6.2,cp:null};
   B.envDef=BACKGROUNDS[def.arena];B.env=B.envDef.build({w:def.w*S,h:def.h*S,arena:true});B.cfg=B.envDef.cfg;
   FX.clear();
@@ -72,9 +72,10 @@ function startBattle(id){
   def.allies.forEach((n,i)=>{const a=ALLY_DEF[n];B.allies.push({name:n,c:a.c,r:a.r,maxhp:a.hp,hp:a.hp,x:def.w/2+(i-1)*70,y:def.h*0.7,atkCd:rand(0,1),down:0,face:-PI/2,swing:0,rig:makeAvatar(a.av),px:0,py:0,mv:0});});
   if(def.core){B.core={x:def.w/2,y:def.h*0.76,r:38,hp:1000,maxhp:1000,flash:0};P.y=def.h*0.45;B.gen=PROPS.generator.build();}
   if(def.bosses)def.bosses.forEach((b,i)=>{const e=spawn(b,def.w/2+(def.bosses.length>1?(i?160:-160):0),def.h*0.28);B.bossIds.push(e);});
+  if(def.init)def.init();
   if(id==='tut')tutInit();
   if(def.waves)nextWave();
-  hideDialog();['card','title','chap','fin','result','over','pause'].forEach(i=>show(i,false));GS.map=false;show('map',false);
+  hideDialog();['card','title','chap','fin','result','over','pause','bossSel','db'].forEach(i=>show(i,false));GS.map=false;show('map',false);
   GS.mode='battle';GS.paused=false;masterRefresh();
   show('hud',true);show('ctrl',true);show('pauseB',true);
   $('banner').classList.remove('on');$('barks').innerHTML='';
@@ -227,7 +228,7 @@ function updatePlayer(dt){
   if(inp.atkRel){inp.atkRel=false;if(P.holdT>=0){P.holdT=(performance.now()-(inp.atkT0||0))/1000;if(P.holdT>=0.5){P.holdT=-1;if(P.airPress&&air)doJumpHeavy();else if(!air)doHeavy();}}if(P.holdT>=0&&P.holdT<0.5){if(P.airPress&&air)doJumpAttack();else P.atkBuf=0.35;}P.holdT=-1;}
   if(P.atkBuf>0&&P.atkT<=0&&P.dashT<=0){P.atkBuf=0;if(air)doJumpAttack();else doAttack();}
   /* F 줍기 */
-  if(inp.fP&&B.nearItem)pickItem(B.nearItem);
+  if(inp.fP){if(B.db)dbPress();else if(B.nearItem)pickItem(B.nearItem);}
   if(inp.dodgeP&&P.dashCd<=0)doDodge();
   if(inp.dashP&&P.dashCd<=0)doDash();
   if(inp.qP&&P.cdQ[P.active]<=0&&P.dashT<=0)doSkillQ();
@@ -386,7 +387,7 @@ function updateItems(dt){
   B.items=B.items.filter(it=>it.life>0);B.nearItem=near;
   const pr=U('interact');
   if(near)setH(pr,inp.touch?`${ITEMS[near.id].name} — 눌러서 줍기`:`<span class="key">F</span> ${ITEMS[near.id].name} 줍기`);
-  setC(pr,'hide',!near);setC(U('bF'),'hide',!near);
+  setC(pr,'hide',!near);setC(U('bF'),'hide',!near&&!B.db);
 }
 function pickItem(it){
   const d=ITEMS[it.id];B.items=B.items.filter(x=>x!==it);B.nearItem=null;
@@ -551,9 +552,10 @@ function hurtAlly(a,dmg){if(M('god'))return;a.hp-=dmg;ftxt(a.x,a.y,'-'+Math.roun
 function hurtCore(dmg){if(!B.core||M('god'))return;B.core.hp-=dmg;B.core.flash=.15;if(B.core.hp<=0){B.core.hp=0;lose('방어막 발생기가 파괴되었습니다.');}}
 function hitEnemy(e,dmg,o){
   if(!e.alive||e.inv)return;o=o||{};
+  if(e.onHit&&e.onHit(e,o)===false)return; // 보스 기믹(사슬 방어 등)
   const crit=!o.ally&&Math.random()<.12;
-  let d=Math.max(1,Math.round(dmg*(M('dmg')&&!o.ally?10:1)*(crit?1.6:1)*(e.d.armor||1)*rand(.92,1.08)));
-  e.hp-=d;e.flash=.1;
+  let d=Math.max(1,Math.round(dmg*(M('dmg')&&!o.ally?10:1)*(crit?1.6:1)*(e.d.armor||1)*(e.dmgMul||1)*rand(.92,1.08)));
+  e.hp-=d;e.flash=.1;if(e.floor&&e.hp<e.floor)e.hp=e.floor; // 발악 전까지 버팀
   if(o.kb){const k=e.d.heavy?.08:1;e.kx+=Math.cos(o.ang)*o.kb*k;e.ky+=Math.sin(o.ang)*o.kb*k;}
   ftxt(e.x,e.y,(crit?'✦':'')+d,crit?'#ffe08a':(o.ally?'#ffc2b3':'#ffffff'),crit||o.big,e.d.hgt*.8);
   FX.burst(e.x*S,1.1,e.y*S,o.ally?2:5,o.col||'#ffffff',3.5,.3,.06);
@@ -746,10 +748,12 @@ function battleUpdate(rdt){
   if(B.hitstop>0){B.hitstop-=rdt;dt=rdt*.08;}
   if(B.slow>0){B.slow-=rdt;dt*=B.slowS;}
   if(B.cine||B.ucine)dt*=B.cine?.08:.15;
+  if(B.db)dt*=updateDB(rdt); // 즉사기 진행 (파훼 창에서는 느려짐)
   B.linkInv-=rdt;B.shake=Math.max(0,B.shake-rdt*1.4);B.comboT-=rdt;if(B.comboT<=0)B.combo=0;B.t+=dt;
   if(B.winT>=0){B.winT-=rdt;dt*=.35;if(B.winT<0){showResult();return;}}
   if(!B.over&&B.winT<0)B.stats.time+=rdt;
   updatePlayer(dt);clearPresses();
+  if(B.def.tick)B.def.tick(dt);
   updateAllies(dt);updateEnemies(dt);updateHaz(dt);updateProj(dt);
   for(const g of B.ghosts)g.life-=dt;B.ghosts=B.ghosts.filter(g=>g.life>0);
   updateItems(dt);updateEgos(dt);updateUlt(rdt,dt);
@@ -769,12 +773,12 @@ function lose(msg){if(B.over)return;B.over=true;show('bWin',false);SFX.lose();se
 function showResult(){
   GS.mode='result';show('bWin',false);releaseLock();toggleMap(false);$('interact').classList.add('hide');
   const s=B.stats,t=s.time;
-  const score=100-s.taken/12+s.maxCombo/3+s.perfect*2-Math.max(0,t-(B.id==='tut'||B.id==='outpost'?150:120))/3;
+  const score=100-s.taken/12+s.maxCombo/3+s.perfect*2-Math.max(0,t-(B.def.par||(B.id==='tut'||B.id==='outpost'?150:120)))/3+(s.counters||0)*3;
   $('rRank').textContent=score>=95?'S':score>=75?'A':score>=55?'B':'C';
-  $('rStats').innerHTML=`<span>전투 시간</span><b>${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}</b><span>받은 피해</span><b>${Math.round(s.taken)}</b><span>최대 콤보</span><b>${s.maxCombo}</b><span>완벽 회피</span><b>${s.perfect}</b>`;
+  $('rStats').innerHTML=`<span>전투 시간</span><b>${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}</b><span>받은 피해</span><b>${Math.round(s.taken)}</b><span>최대 콤보</span><b>${s.maxCombo}</b><span>완벽 회피</span><b>${s.perfect}</b>`+(s.counters?`<span>즉사기 파훼</span><b>${s.counters}</b>`:'');
   show('hud',false);show('ctrl',false);show('pauseB',false);show('result',true);
 }
-$('rNext').onclick=()=>{SFX.ui();show('result',false);B=null;FX.clear();nextStep();};
+$('rNext').onclick=()=>{SFX.ui();show('result',false);const tr=B&&B.def.trial;B=null;FX.clear();if(tr)toTitle();else nextStep();};
 $('oRetry').onclick=()=>{SFX.ui();show('over',false);startBattle(B.id);};
 $('oTitle').onclick=()=>{SFX.ui();toTitle();};
 const SENS_N=['낮음','보통','높음'],UI_N={auto:'자동',pc:'PC',touch:'모바일'},GFX_N={auto:'자동',high:'높음',low:'낮음'};
@@ -829,7 +833,7 @@ function cdShow(id,v){const el=U(id);setC(el,'hide',v<=0);if(v>0)setT(el,Math.ce
 /* 보스 체력 · 목표 막대: 구조는 한 번만 만들고 이후엔 너비만 바꾼다 */
 function buildBattleHud(){
   const bosses=B.en.filter(e=>e.d.boss);
-  U('boss').innerHTML=bosses.map(e=>`<div class="bn">${e.d.name}<small>${e.d.sub}</small></div><div class="bar" style="margin-bottom:6px"><i></i></div>`).join('');
+  U('boss').innerHTML=bosses.map(e=>`<div class="bn">${e.d.name}<small>${e.sub||e.d.sub}</small></div><div class="bar" style="margin-bottom:6px"><i></i></div>`).join('');
   U('obj').innerHTML=bosses.length?'':B.core?`<span class="ot"></span><div id="core"><div class="bar"><i></i></div></div><span class="cp" style="font-size:11px;color:#ffcf9f"></span>`:B.def.obj;
   B.hud={bosses,key:bosses.length,bars:[...U('boss').querySelectorAll('i')],ot:U('obj').querySelector('.ot'),cbar:U('obj').querySelector('#core i'),cp:U('obj').querySelector('.cp')};
 }
@@ -884,7 +888,7 @@ function render3D(rdt){
   for(const k of ['eden','nesis'])setRigPower(P.rig[k],powerOn(k),t);
   R3.begin(B.cfg);
   drawSky(B.def.arena,B.cfg);
-  B.env.draw(t);
+  B.env.draw(t);if(B.def.draw)B.def.draw(t);if(B.db)drawDB(t);
   if(B.core)B.gen.draw(B.core.x*S,B.core.y*S,t,B.core.hp/B.core.maxhp,B.core.flash>0);
   for(const h of B.haz){const o={r:(h.r||0)*S,r2:(h.r2||0)*S,arc:h.arc,ang:h.ang,len:(h.len||0)*S,w:(h.w||0)*S};
     FX.decal(h.k,h.x*S,h.y*S,o,h.t>0?1-h.t/h.t0:1,'#ff3c5a',h.t<=0);}
